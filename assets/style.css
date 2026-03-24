@@ -3,8 +3,17 @@ html {
     flex-direction: column;
     align-items: center;
     font: 1em sans-serif;
+    line-height: 1.5em;
 }
 
 body {
     max-width: 600px;
+}
+
+header {
+    border-bottom: 1px solid black;
+}
+
+footer {
+    border-top: 1px solid black;
 }
