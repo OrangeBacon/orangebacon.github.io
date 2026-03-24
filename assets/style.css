@@ -1,0 +1,10 @@
+html {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font: 1em sans-serif;
+}
+
+body {
+    max-width: 600px;
+}

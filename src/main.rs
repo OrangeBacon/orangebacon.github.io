@@ -10,7 +10,7 @@ use std::{
     path::Component,
 };
 
-pub const OUTPUT_DIR: &str = "./docs";
+pub const OUTPUT_DIR: &str = "docs";
 
 fn main() -> Result<(), Box<dyn Error>> {
     // remove the old output directory, ignore if it fails
