@@ -48,6 +48,7 @@ fn file_filter(entry: &DirEntry) -> bool {
         ".devcontainer", // used for github codespaces
         "target",        // rust build files
         "src",           // source code to the generator
+        "templates",     // files to be used as templates for other files
     ]
     .contains(&name.as_ref())
 }
