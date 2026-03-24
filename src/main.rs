@@ -2,14 +2,15 @@
 //! for this site.  I am trying to keep this minimal, so I focus less on this
 //! pile of code, and more on the content on the site.  (lets see how this goes)
 
+mod file;
+
 use std::{
     error::Error,
     fs::{self, DirEntry},
-    io::{BufWriter, Write},
-    path::{Component, Path, PathBuf},
+    path::Component,
 };
 
-const OUTPUT_DIR: &str = "./docs";
+pub const OUTPUT_DIR: &str = "./docs";
 
 fn main() -> Result<(), Box<dyn Error>> {
     // remove the old output directory, ignore if it fails
@@ -60,31 +61,8 @@ fn process_entry(entry: &DirEntry) -> Result<(), Box<dyn Error>> {
             process_entry(&dir)?;
         }
     } else {
-        process_file(&path)?;
+        file::process_file(&path)?;
     }
-
-    Ok(())
-}
-
-/// Handle all file processing
-fn process_file(path: &Path) -> Result<(), Box<dyn Error>> {
-    // for now just copy input to output without processing
-    let output_path = PathBuf::from(OUTPUT_DIR).join(path);
-
-    if let Some(parent) = output_path.parent() {
-        fs::create_dir_all(parent)?;
-    }
-
-    let output_file = fs::OpenOptions::new()
-        .truncate(true)
-        .create(true)
-        .write(true)
-        .open(output_path)?;
-    let mut buf_write = BufWriter::new(output_file);
-
-    let input = fs::read_to_string(path)?;
-
-    buf_write.write_all(input.as_bytes())?;
 
     Ok(())
 }
