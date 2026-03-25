@@ -28,8 +28,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     fs::create_dir(OUTPUT_DIR)?;
 
     let mut entries = SiteEntries::new();
-    entries.handler(MarkdownHandler);
     entries.handler(TemplateHandler::default());
+    entries.handler(MarkdownHandler);
     entries.handler(TextHandler);
 
     for entry in fs::read_dir(".")?.flatten().filter(file_filter) {

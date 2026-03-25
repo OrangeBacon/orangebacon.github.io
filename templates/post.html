@@ -1,30 +1,14 @@
-<!DOCTYPE html>
-<html lang="en-GB">
+{% extends "./templates/main.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <title>{% title %} | Ella's Writing</title>
-    <meta name="viewport" content="width=device-width" />
-    <link rel="stylesheet" href="/assets/style.css">
-</head>
+{% block title %}{{title}}{% endblock %}
 
-<body>
-    <nav>
-        <a href="../">Ella's Writing</a>
-    </nav>
+{% block body %}
+<header>
+    <h1>{{ title }}</h1>
+    <p>Written by Ella on <time datetime="{{ date }}">{{ date }}</time></p>
+</header>
 
-    <header>
-        <h1>{% title %}</h1>
-        <p>Written by Ella on <time datetime="{% date %}">{% date %}</time></p>
-    </header>
-
-    <main>
-        {% content %}
-    </main>
-
-    <footer>
-        Ella's Writing &copy; 2026 by Ella is licensed under CC BY-SA-NC 4.0
-    </footer>
-</body>
-
-</html>
+<main>
+    {{ content }}
+</main>
+{% endblock %}

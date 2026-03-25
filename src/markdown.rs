@@ -1,17 +1,19 @@
 use std::{
+    any::Any,
     collections::HashMap,
     path::{Path, PathBuf},
 };
 
+use minijinja::{Value, value::Object};
 use pulldown_cmark::{Event, Options, Parser, Tag, TagEnd, html::push_html};
 
 use crate::{
     file::{FileHandler, SiteEntries},
-    plain_text::CONTENT_KEY,
+    template::TemplateHandler,
 };
 
-/// File handler for plain text files, simple file copy with no processing done.
-/// Matches all files as a fallback handler.
+/// File handler for markdown files.  Parses the markdown and puts it into the
+/// named template file.
 pub struct MarkdownHandler;
 
 impl FileHandler for MarkdownHandler {
@@ -55,15 +57,24 @@ impl FileHandler for MarkdownHandler {
     }
 
     fn output(&self, path: &Path, entries: &SiteEntries) -> Option<String> {
+        let templates = entries
+            .handlers()
+            .flat_map(|h| (h as &dyn Any).downcast_ref::<TemplateHandler>())
+            .next()
+            .unwrap();
         let metadata = &entries.site_data()[path];
 
-        let template = &entries.site_data()[Path::new(&metadata["template"])][CONTENT_KEY];
-
-        let mut output = template.clone();
-        for (key, value) in metadata {
-            output = output.replace(&format!("{{% {key} %}}"), value);
+        #[derive(Debug)]
+        struct Meta(HashMap<String, String>);
+        impl Object for Meta {
+            fn get_value(self: &std::sync::Arc<Self>, key: &Value) -> Option<Value> {
+                Some(Value::from(self.0.get(key.as_str()?)?))
+            }
         }
 
+        let template = templates.env.get_template(&metadata["template"]).unwrap();
+        let ctx = Value::from_object(Meta(metadata.clone()));
+        let output = template.render(ctx).unwrap();
         Some(output)
     }
 

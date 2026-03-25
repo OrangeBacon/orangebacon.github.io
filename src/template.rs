@@ -15,7 +15,7 @@ use crate::{
 /// upon the output file handlers.
 #[derive(Default)]
 pub struct TemplateHandler {
-    env: Environment<'static>,
+    pub env: Environment<'static>,
 }
 
 impl FileHandler for TemplateHandler {
@@ -33,7 +33,8 @@ impl FileHandler for TemplateHandler {
 
     fn metadata(&mut self, path: &Path, content: String) -> HashMap<String, String> {
         self.env
-            .add_template_owned(path.to_string_lossy().to_string(), content.clone());
+            .add_template_owned(path.to_string_lossy().to_string(), content.clone())
+            .unwrap();
 
         HashMap::from([(CONTENT_KEY.to_string(), content)])
     }
