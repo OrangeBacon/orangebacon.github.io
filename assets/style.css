@@ -8,11 +8,29 @@ html {
 
 body {
     max-width: 600px;
+    margin: 10px;
 }
 
 nav {
     border-bottom: 1px solid black;
     padding-bottom: 0.5em;
+    text-align: right;
+}
+
+nav a {
+    color: black;
+    font-size: 1.5em;
+    text-decoration: none;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+
+header p,
+footer {
+    font-size: 0.8em;
+    color: gray;
 }
 
 footer {
