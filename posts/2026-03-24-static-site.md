@@ -1,7 +1,7 @@
 ---
 title: Static Site Generator
 date: 2026-03-24
-template: templates/post.html
+template: ./templates/post.html
 ---
 As an actual first post, I thought it would be worth writing about the code that creates this website, and my reasoning for writing the code how I have.  For anyone who is interested, the code can be found at [GitHub](https://github.com/OrangeBacon/orangebacon.github.io).
 

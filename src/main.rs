@@ -10,6 +10,8 @@ use std::{
     path::Component,
 };
 
+use crate::file::SiteEntries;
+
 pub const OUTPUT_DIR: &str = "docs";
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -19,15 +21,18 @@ fn main() -> Result<(), Box<dyn Error>> {
     // create the new output directory
     fs::create_dir(OUTPUT_DIR)?;
 
+    let mut entries = SiteEntries::new();
     for entry in fs::read_dir(".")?.flatten().filter(file_filter) {
-        process_entry(&entry)?;
+        process_entry(&mut entries, &entry)?;
     }
+
+    entries.process()?;
 
     Ok(())
 }
 
-/// Should a file be included in the output directory.  Only run on the top
-/// level directory iteration.
+/// Get all files that should be considered when generating the site.  Includes
+/// files that might not be present in the output, e.g. template files.
 fn file_filter(entry: &DirEntry) -> bool {
     let path = entry.path();
 
@@ -48,21 +53,21 @@ fn file_filter(entry: &DirEntry) -> bool {
         ".devcontainer", // used for github codespaces
         "target",        // rust build files
         "src",           // source code to the generator
-        "templates",     // files to be used as templates for other files
     ]
     .contains(&name.as_ref())
 }
 
 /// Process a directory entry
-fn process_entry(entry: &DirEntry) -> Result<(), Box<dyn Error>> {
+fn process_entry(entries: &mut SiteEntries, entry: &DirEntry) -> Result<(), Box<dyn Error>> {
     let path = entry.path();
 
     if path.is_dir() {
         for dir in fs::read_dir(path)?.flatten() {
-            process_entry(&dir)?;
+            process_entry(entries, &dir)?;
         }
     } else {
-        file::process_file(&path)?;
+        let content = fs::read_to_string(&path)?;
+        entries.add(path, content);
     }
 
     Ok(())
