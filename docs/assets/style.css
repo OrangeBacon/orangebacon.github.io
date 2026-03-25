@@ -10,10 +10,12 @@ body {
     max-width: 600px;
 }
 
-header {
+nav {
     border-bottom: 1px solid black;
+    padding-bottom: 0.5em;
 }
 
 footer {
     border-top: 1px solid black;
+    padding-top: 0.5em;
 }
