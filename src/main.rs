@@ -3,6 +3,8 @@
 //! pile of code, and more on the content on the site.  (lets see how this goes)
 
 mod file;
+mod markdown;
+mod plain_text;
 
 use std::{
     error::Error,
@@ -10,7 +12,7 @@ use std::{
     path::Component,
 };
 
-use crate::file::SiteEntries;
+use crate::{file::SiteEntries, markdown::MarkdownHandler, plain_text::TextHandler};
 
 pub const OUTPUT_DIR: &str = "docs";
 
@@ -22,6 +24,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     fs::create_dir(OUTPUT_DIR)?;
 
     let mut entries = SiteEntries::new();
+    entries.handler(MarkdownHandler);
+    entries.handler(TextHandler);
+
     for entry in fs::read_dir(".")?.flatten().filter(file_filter) {
         process_entry(&mut entries, &entry)?;
     }

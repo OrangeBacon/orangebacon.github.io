@@ -6,14 +6,27 @@ use std::{
     path::{Component, Path, PathBuf},
 };
 
-use pulldown_cmark::{Event, Options, Parser, Tag, TagEnd, html::push_html};
-
 use crate::OUTPUT_DIR;
 
 /// Collection of all site content, prior to processing.  Contains all files, read
 /// from the file system, therefore assumes that the whole site fits in RAM at once.
 pub struct SiteEntries {
-    content: HashMap<PathBuf, String>,
+    content: HashMap<PathBuf, HashMap<String, String>>,
+    handlers: Vec<Box<dyn FileHandler>>,
+}
+
+/// Trait common for all file type handlers
+pub trait FileHandler {
+    /// Does the given path apply to this handler
+    fn matches(&self, path: &Path) -> bool;
+
+    /// Get the metadata for a given file type.  Will only be called with paths
+    /// where `self.matches` returns true.
+    fn metadata(&self, path: &Path, content: String) -> HashMap<String, String>;
+
+    /// Get the output content for a file, given the metadata for all files in
+    /// the site.  Will only be called with paths where `self.matches` returns true.
+    fn output(&self, path: &Path, entries: &SiteEntries) -> String;
 }
 
 impl SiteEntries {
@@ -21,25 +34,45 @@ impl SiteEntries {
     pub fn new() -> Self {
         Self {
             content: HashMap::new(),
+            handlers: vec![],
         }
+    }
+
+    /// Get all data for the site
+    pub fn site_data(&self) -> &HashMap<PathBuf, HashMap<String, String>> {
+        &self.content
+    }
+
+    /// Add a handler for a file type.  The order they are checked in is equal to
+    /// the order they are added, so add more specific ones first.
+    pub fn handler<H: FileHandler + 'static>(&mut self, handler: H) {
+        self.handlers.push(Box::new(handler));
     }
 
     /// Add a file to the site.
     pub fn add(&mut self, path: impl Into<PathBuf>, content: impl Into<String>) {
-        self.content.insert(path.into(), content.into());
+        let path = path.into();
+
+        for handler in &self.handlers {
+            if handler.matches(&path) {
+                let data = handler.metadata(&path, content.into());
+                self.content.insert(path, data);
+                return;
+            }
+        }
     }
 
     /// Process all files in the site and write the output to the filesystem.
     pub fn process(&self) -> Result<(), Box<dyn Error>> {
-        for (path, content) in &self.content {
-            self.process_file(path, content)?;
+        for path in self.content.keys() {
+            self.process_file(path)?;
         }
 
         Ok(())
     }
 
     /// Handle all file processing
-    pub fn process_file(&self, path: &Path, content: &str) -> Result<(), Box<dyn Error>> {
+    pub fn process_file(&self, path: &Path) -> Result<(), Box<dyn Error>> {
         // filter out template files
         let components: Vec<_> = path.components().collect();
         if let Some(Component::Normal(filter_dir)) = components.get(1) {
@@ -62,10 +95,14 @@ impl SiteEntries {
             .open(output_path)?;
         let mut buf_write = BufWriter::new(output_file);
 
-        if path.extension().map(|e| e == "md").unwrap_or(false) {
-            self.process_markdown(content, buf_write)?;
-        } else {
-            buf_write.write_all(content.as_bytes())?;
+        for handler in &self.handlers {
+            if handler.matches(path) {
+                let data = handler.output(path, self);
+
+                buf_write.write_all(data.as_bytes())?;
+
+                return Ok(());
+            }
         }
 
         Ok(())
@@ -87,57 +124,5 @@ impl SiteEntries {
         }
 
         PathBuf::from(OUTPUT_DIR).join(path)
-    }
-
-    /// Process a markdown file
-    fn process_markdown(
-        &self,
-        input: &str,
-        mut writer: impl std::io::Write,
-    ) -> Result<(), Box<dyn Error>> {
-        let mut options = Options::empty();
-        options.insert(Options::ENABLE_YAML_STYLE_METADATA_BLOCKS);
-        let parser = Parser::new_ext(input, options);
-
-        // extract the metadata from the parser
-        let mut metadata = String::new();
-        let mut in_meta = false;
-        let parser = parser.filter(|ev| match ev {
-            Event::Start(Tag::MetadataBlock(_)) => {
-                in_meta = true;
-                false
-            }
-            Event::End(TagEnd::MetadataBlock(_)) => {
-                in_meta = false;
-                false
-            }
-            Event::Text(txt) if in_meta => {
-                metadata.push_str(txt);
-                false
-            }
-            _ => true,
-        });
-
-        let mut html = String::new();
-        push_html(&mut html, parser);
-
-        let metadata: HashMap<_, _> = metadata
-            .lines()
-            .flat_map(|l| l.split_once(":"))
-            .map(|(k, v)| (k.trim(), v.trim()))
-            .chain(std::iter::once(("content", html.as_str())))
-            .collect();
-
-        // get the template and replace the directives in it
-        let template = &self.content[Path::new(&metadata["template"])];
-
-        let mut output = template.clone();
-        for (key, value) in metadata {
-            output = output.replace(&format!("{{% {key} %}}"), value);
-        }
-
-        writer.write_all(output.as_bytes())?;
-
-        Ok(())
     }
 }
