@@ -1,4 +1,7 @@
-use std::{collections::HashMap, path::Path};
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+};
 
 use pulldown_cmark::{Event, Options, Parser, Tag, TagEnd, html::push_html};
 
@@ -16,7 +19,7 @@ impl FileHandler for MarkdownHandler {
         path.extension().map(|e| e == "md").unwrap_or(false)
     }
 
-    fn metadata(&self, _: &Path, content: String) -> HashMap<String, String> {
+    fn metadata(&mut self, _: &Path, content: String) -> HashMap<String, String> {
         let mut options = Options::empty();
         options.insert(Options::ENABLE_YAML_STYLE_METADATA_BLOCKS);
         let parser = Parser::new_ext(&content, options);
@@ -51,7 +54,7 @@ impl FileHandler for MarkdownHandler {
             .collect()
     }
 
-    fn output(&self, path: &Path, entries: &SiteEntries) -> String {
+    fn output(&self, path: &Path, entries: &SiteEntries) -> Option<String> {
         let metadata = &entries.site_data()[path];
 
         let template = &entries.site_data()[Path::new(&metadata["template"])][CONTENT_KEY];
@@ -61,6 +64,12 @@ impl FileHandler for MarkdownHandler {
             output = output.replace(&format!("{{% {key} %}}"), value);
         }
 
-        output
+        Some(output)
+    }
+
+    fn output_path(&self, path: &Path) -> PathBuf {
+        let mut path = path.to_path_buf();
+        path.set_extension("html");
+        path
     }
 }

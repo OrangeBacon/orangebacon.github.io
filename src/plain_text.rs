@@ -13,11 +13,11 @@ impl FileHandler for TextHandler {
         true
     }
 
-    fn metadata(&self, _: &Path, content: String) -> HashMap<String, String> {
+    fn metadata(&mut self, _: &Path, content: String) -> HashMap<String, String> {
         HashMap::from([(CONTENT_KEY.to_string(), content)])
     }
 
-    fn output(&self, path: &Path, entries: &SiteEntries) -> String {
-        entries.site_data()[path][CONTENT_KEY].clone()
+    fn output(&self, path: &Path, entries: &SiteEntries) -> Option<String> {
+        Some(entries.site_data()[path][CONTENT_KEY].clone())
     }
 }

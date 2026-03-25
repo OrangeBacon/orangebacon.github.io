@@ -5,6 +5,7 @@
 mod file;
 mod markdown;
 mod plain_text;
+mod template;
 
 use std::{
     error::Error,
@@ -12,7 +13,10 @@ use std::{
     path::Component,
 };
 
-use crate::{file::SiteEntries, markdown::MarkdownHandler, plain_text::TextHandler};
+use crate::{
+    file::SiteEntries, markdown::MarkdownHandler, plain_text::TextHandler,
+    template::TemplateHandler,
+};
 
 pub const OUTPUT_DIR: &str = "docs";
 
@@ -25,6 +29,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut entries = SiteEntries::new();
     entries.handler(MarkdownHandler);
+    entries.handler(TemplateHandler::default());
     entries.handler(TextHandler);
 
     for entry in fs::read_dir(".")?.flatten().filter(file_filter) {
