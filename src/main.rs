@@ -4,6 +4,7 @@
 
 mod file;
 mod markdown;
+mod output_template;
 mod plain_text;
 mod template;
 
@@ -14,8 +15,8 @@ use std::{
 };
 
 use crate::{
-    file::SiteEntries, markdown::MarkdownHandler, plain_text::TextHandler,
-    template::TemplateHandler,
+    file::SiteEntries, markdown::MarkdownHandler, output_template::OutputTemplate,
+    plain_text::TextHandler, template::TemplateHandler,
 };
 
 pub const OUTPUT_DIR: &str = "docs";
@@ -28,7 +29,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     fs::create_dir(OUTPUT_DIR)?;
 
     let mut entries = SiteEntries::new();
-    entries.handler(TemplateHandler::default());
+    entries.handler(TemplateHandler);
+    entries.handler(OutputTemplate);
     entries.handler(MarkdownHandler);
     entries.handler(TextHandler);
 

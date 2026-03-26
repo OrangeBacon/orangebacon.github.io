@@ -1,5 +1,4 @@
 use std::{
-    any::Any,
     collections::HashMap,
     error::Error,
     fs,
@@ -17,7 +16,7 @@ pub struct SiteEntries {
 }
 
 /// Trait common for all file type handlers
-pub trait FileHandler: Any {
+pub trait FileHandler {
     /// Does the given path apply to this handler
     fn matches(&self, path: &Path) -> bool;
 
@@ -54,11 +53,6 @@ impl SiteEntries {
     /// the order they are added, so add more specific ones first.
     pub fn handler<H: FileHandler + 'static>(&mut self, handler: H) {
         self.handlers.push(Box::new(handler));
-    }
-
-    /// Get all file handlers
-    pub fn handlers(&self) -> impl Iterator<Item = &dyn FileHandler> {
-        self.handlers.iter().map(|h| h.as_ref())
     }
 
     /// Add a file to the site.

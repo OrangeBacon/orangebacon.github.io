@@ -7,6 +7,7 @@ html {
 }
 
 body {
+    min-width: calc(min(600px, 100% - 20px));
     max-width: 600px;
     margin: 10px;
 }
@@ -31,6 +32,10 @@ header p,
 footer {
     font-size: 0.8em;
     color: gray;
+}
+
+ul.posts {
+    list-style-type: none;
 }
 
 footer {

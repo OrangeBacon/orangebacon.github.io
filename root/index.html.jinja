@@ -1,0 +1,11 @@
+{% extends "./templates/main.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block body %}
+<ul class="posts">
+    {% for post in posts | sort(reverse=true) if ".md" in post %}
+        <li><a href="{{ remove_extension(post) }}">{{ posts[post]["title"] }} - {{ posts[post]["date"] }}</a></li>
+    {% endfor %}
+</ul>
+{% endblock %}
