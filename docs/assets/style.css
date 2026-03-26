@@ -36,6 +36,20 @@ footer {
 
 ul.posts {
     list-style-type: none;
+    padding: 0;
+}
+
+ul.posts li a {
+    color: black;
+    text-decoration: none;
+}
+
+ul.posts li a p {
+    padding-left: 2em;
+}
+
+ul.posts li a:hover h2 {
+    text-decoration: underline;
 }
 
 footer {

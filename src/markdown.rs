@@ -27,6 +27,10 @@ impl FileHandler for MarkdownHandler {
         // extract the metadata from the parser
         let mut metadata = String::new();
         let mut in_meta = false;
+
+        let mut found_heading = false;
+        let mut first_para = String::new();
+
         let parser = parser.filter(|ev| match ev {
             Event::Start(Tag::MetadataBlock(_)) => {
                 in_meta = true;
@@ -36,9 +40,21 @@ impl FileHandler for MarkdownHandler {
                 in_meta = false;
                 false
             }
+            Event::HardBreak
+            | Event::SoftBreak
+            | Event::Start(Tag::Heading { .. })
+            | Event::End(TagEnd::Paragraph) => {
+                found_heading = true;
+                true
+            }
+
             Event::Text(txt) if in_meta => {
                 metadata.push_str(txt);
                 false
+            }
+            Event::Text(txt) if !in_meta && !found_heading => {
+                first_para.push_str(txt);
+                true
             }
             _ => true,
         });
@@ -46,12 +62,15 @@ impl FileHandler for MarkdownHandler {
         let mut html = String::new();
         push_html(&mut html, parser);
 
-        metadata
+        let mut metadata: HashMap<_, _> = metadata
             .lines()
             .flat_map(|l| l.split_once(":"))
             .map(|(k, v)| (k.trim().to_string(), v.trim().to_string()))
-            .chain(std::iter::once(("content".to_string(), html)))
-            .collect()
+            .collect();
+
+        metadata.insert("content".to_string(), html);
+        metadata.insert("intro".to_string(), first_para);
+        metadata
     }
 
     fn output(&self, path: &Path, entries: &SiteEntries) -> Option<String> {
