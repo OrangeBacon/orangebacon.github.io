@@ -4,12 +4,14 @@ html {
     align-items: center;
     font: 1em sans-serif;
     line-height: 1.5em;
+    scrollbar-gutter: stable both-edges;
 }
 
 body {
-    min-width: calc(min(600px, 100% - 20px));
+    --body-margin: 10px;
+    min-width: calc(min(600px, 100% - 2 * var(--body-margin)));
     max-width: 600px;
-    margin: 10px;
+    margin: var(--body-margin);
 }
 
 nav {
@@ -55,4 +57,19 @@ ul.posts li a:hover h2 {
 footer {
     border-top: 1px solid black;
     padding-top: 0.5em;
+}
+
+.post_title {
+    display: flex;
+    align-items: baseline;
+}
+
+.post_title h2 {
+    margin-bottom: 0;
+}
+
+.post_title time {
+    font-size: 0.8em;
+    color: gray;
+    padding-left: 0.5em;
 }
