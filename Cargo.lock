@@ -111,6 +111,7 @@ version = "0.1.0"
 dependencies = [
  "minijinja",
  "pulldown-cmark",
+ "pulldown-cmark-escape",
 ]
 
 [[package]]
