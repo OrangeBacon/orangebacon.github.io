@@ -154,7 +154,7 @@ where
                 }
                 Event::FootnoteReference(name) => {
                     let len = self.footnote_links.len() + 1;
-                    self.write("<sup class=\"footnote-reference\"><a href=\"#")?;
+                    self.write("<sup class=\"footnote-reference\"><a href=\"#fn-")?;
                     escape_html(&mut self.output, &name)?;
                     self.write("\">")?;
                     let number = *self.footnote_links.entry(name.to_string()).or_insert(len);
@@ -180,16 +180,16 @@ where
 
         for (_, (name, note)) in notes {
             if self.end_newline {
-                self.write("<div class=\"footnote-definition\" id=\"")?;
+                self.write("<div class=\"footnote-definition\" id=\"fn-")?;
             } else {
-                self.write("\n<div class=\"footnote-definition\" id=\"")?;
+                self.write("\n<div class=\"footnote-definition\" id=\"fn-")?;
             }
             escape_html(&mut self.output, &name)?;
-            self.write("\"><sup class=\"footnote-definition-label\">")?;
+            self.write("\"><span class=\"footnote-definition-label\">")?;
             let len = self.footnote_links.len() + 1;
             let number = *self.footnote_links.entry(name.clone()).or_insert(len);
-            write!(&mut self.output, "{}", number)?;
-            self.write("</sup>")?;
+            write!(&mut self.output, "{}: ", number)?;
+            self.write("</span>")?;
             self.write(&note)?;
             self.write("</div>\n")?;
         }
