@@ -5,8 +5,8 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use pulldown_cmark::{Event, Options, Parser, Tag, TagEnd};
-use pulldown_cmark_escape::{escape_href, escape_html_body_text};
+use pulldown_cmark::{Event, HeadingLevel, Options, Parser, Tag, TagEnd};
+use pulldown_cmark_escape::{escape_href, escape_html, escape_html_body_text};
 
 use crate::{
     file::{FileHandler, SiteEntries},
@@ -25,6 +25,7 @@ impl FileHandler for MarkdownHandler {
     fn metadata(&mut self, _: &Path, content: String) -> HashMap<String, String> {
         let mut options = Options::empty();
         options.insert(Options::ENABLE_YAML_STYLE_METADATA_BLOCKS);
+        options.insert(Options::ENABLE_FOOTNOTES);
         let parser = Parser::new_ext(&content, options);
 
         let mut html = HtmlWriter::new(parser);
@@ -37,7 +38,7 @@ impl FileHandler for MarkdownHandler {
             .map(|(k, v)| (k.trim().to_string(), v.trim().to_string()))
             .collect();
 
-        metadata.insert("content".to_string(), html.output);
+        metadata.insert("content".to_string(), html.output.as_str().to_string());
         metadata.insert("intro".to_string(), html.introduction);
         metadata
     }
@@ -65,7 +66,7 @@ struct HtmlWriter<I> {
     iter: I,
 
     /// String to write to.
-    output: String,
+    output: MultiString,
 
     /// Whether or not the last write wrote a newline.
     end_newline: bool,
@@ -81,6 +82,12 @@ struct HtmlWriter<I> {
 
     /// The contents of the introduction paragraph
     introduction: String,
+
+    /// Map footnote identifier to footnote number
+    footnote_links: HashMap<String, usize>,
+
+    /// Map footnote number to definition content
+    footnote_defs: HashMap<usize, (String, String)>,
 }
 
 impl<'a, I> HtmlWriter<I>
@@ -90,12 +97,14 @@ where
     fn new(iter: I) -> Self {
         Self {
             iter,
-            output: String::new(),
+            output: MultiString::default(),
             end_newline: true,
             in_metadata: false,
             metadata: String::new(),
             in_intro: true,
             introduction: String::new(),
+            footnote_links: HashMap::new(),
+            footnote_defs: HashMap::new(),
         }
     }
 
@@ -143,9 +152,48 @@ where
                     self.in_intro = false;
                     self.write("<br />\n")?;
                 }
+                Event::FootnoteReference(name) => {
+                    let len = self.footnote_links.len() + 1;
+                    self.write("<sup class=\"footnote-reference\"><a href=\"#")?;
+                    escape_html(&mut self.output, &name)?;
+                    self.write("\">")?;
+                    let number = *self.footnote_links.entry(name.to_string()).or_insert(len);
+                    write!(&mut self.output, "{}", number)?;
+                    self.write("</a></sup>")?;
+                }
                 ev => todo!("Impl {ev:?}"),
             }
         }
+
+        let mut notes: Vec<_> = std::mem::take(&mut self.footnote_defs)
+            .into_iter()
+            .collect();
+        notes.sort_by_key(|&(n, _)| n);
+
+        if !notes.is_empty() {
+            if self.end_newline {
+                self.write("<hr />")?;
+            } else {
+                self.write("\n<hr />")?;
+            }
+        }
+
+        for (_, (name, note)) in notes {
+            if self.end_newline {
+                self.write("<div class=\"footnote-definition\" id=\"")?;
+            } else {
+                self.write("\n<div class=\"footnote-definition\" id=\"")?;
+            }
+            escape_html(&mut self.output, &name)?;
+            self.write("\"><sup class=\"footnote-definition-label\">")?;
+            let len = self.footnote_links.len() + 1;
+            let number = *self.footnote_links.entry(name.clone()).or_insert(len);
+            write!(&mut self.output, "{}", number)?;
+            self.write("</sup>")?;
+            self.write(&note)?;
+            self.write("</div>\n")?;
+        }
+
         Ok(())
     }
 
@@ -166,7 +214,7 @@ where
                 } else {
                     self.write("\n<")?;
                 }
-                write!(&mut self.output, "{}>", level)?;
+                write!(&mut self.output, "{}>", reduce_header(level))?;
                 Ok(())
             }
             Tag::List(Some(1)) => {
@@ -213,6 +261,10 @@ where
                 self.in_metadata = true;
                 Ok(())
             }
+            Tag::FootnoteDefinition(name) => {
+                self.output.push(name.to_string());
+                Ok(())
+            }
             tag => todo!("impl {tag:?}"),
         }
     }
@@ -225,7 +277,7 @@ where
             }
             TagEnd::Heading(level) => {
                 self.write("</")?;
-                write!(&mut self.output, "{}", level)?;
+                write!(&mut self.output, "{}", reduce_header(level))?;
                 self.write(">\n")
             }
             TagEnd::Link => self.write("</a>"),
@@ -237,12 +289,81 @@ where
             TagEnd::Subscript => self.write("</sub>"),
             TagEnd::Strong => self.write("</strong>"),
             TagEnd::Strikethrough => self.write("</del>"),
-            TagEnd::FootnoteDefinition => self.write("</div>\n"),
             TagEnd::MetadataBlock(_) => {
                 self.in_metadata = false;
                 Ok(())
             }
+            TagEnd::FootnoteDefinition => {
+                let (name, note) = self.output.pop();
+                let len = self.footnote_links.len() + 1;
+                let number = *self.footnote_links.entry(name.clone()).or_insert(len);
+                self.footnote_defs.insert(number, (name, note));
+                Ok(())
+            }
             tag => todo!("impl {tag:?}"),
         }
+    }
+}
+
+/// Change heading levels down by 1, e.g. h1 -> h2.  Used because the title is
+/// meant to be h1, so h1 in the markdown should render as an h2.
+fn reduce_header(h: HeadingLevel) -> HeadingLevel {
+    match h {
+        HeadingLevel::H1 => HeadingLevel::H2,
+        HeadingLevel::H2 => HeadingLevel::H3,
+        HeadingLevel::H3 => HeadingLevel::H4,
+        HeadingLevel::H4 => HeadingLevel::H5,
+        HeadingLevel::H5 => HeadingLevel::H6,
+        HeadingLevel::H6 => HeadingLevel::H6,
+    }
+}
+
+#[derive(Default)]
+struct MultiString {
+    base: String,
+    other: Vec<(String, String)>,
+}
+
+impl MultiString {
+    /// Get the string
+    pub fn as_str(&self) -> &str {
+        self.other.last().map(|s| &s.1).unwrap_or(&self.base)
+    }
+
+    /// Add a layer to the string, with its name.
+    pub fn push(&mut self, name: String) {
+        self.other.push((name, String::new()));
+    }
+
+    /// Remove the top most layer and return it.  The name of the layer is the
+    /// first string in the tuple.
+    pub fn pop(&mut self) -> (String, String) {
+        self.other.pop().unwrap_or_default()
+    }
+}
+impl std::fmt::Write for MultiString {
+    fn write_str(&mut self, s: &str) -> std::fmt::Result {
+        self.other
+            .last_mut()
+            .map(|s| &mut s.1)
+            .unwrap_or(&mut self.base)
+            .push_str(s);
+
+        Ok(())
+    }
+}
+impl pulldown_cmark_escape::StrWrite for MultiString {
+    type Error = Box<dyn Error>;
+
+    fn write_str(&mut self, s: &str) -> Result<(), Self::Error> {
+        std::fmt::Write::write_str(self, s)?;
+
+        Ok(())
+    }
+
+    fn write_fmt(&mut self, args: std::fmt::Arguments) -> Result<(), Self::Error> {
+        std::fmt::Write::write_fmt(self, args)?;
+
+        Ok(())
     }
 }
