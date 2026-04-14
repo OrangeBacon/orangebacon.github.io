@@ -18,9 +18,8 @@ body {
 body> :not(nav) {
     min-width: calc(min(var(--max-width), 100% - 2 * var(--body-margin)));
     max-width: var(--max-width);
-    padding: var(--body-margin);
+    padding: 0 var(--body-margin);
     box-sizing: border-box;
-    padding-top: 0;
 }
 
 nav {
@@ -53,7 +52,7 @@ p {
 }
 
 body>footer {
-    padding: var(--body-margin);
+    padding: calc(1em + var(--body-margin)) var(--body-margin);
 }
 
 header p,
@@ -69,7 +68,7 @@ main :first-child {
 
 ul.posts {
     list-style-type: none;
-    padding: 0;
+    margin: 0;
 }
 
 ul.posts li a {
@@ -96,7 +95,7 @@ footer {
 }
 
 .post-title h2 {
-    margin-bottom: 0;
+    margin: 0;
 }
 
 .post-title time {
