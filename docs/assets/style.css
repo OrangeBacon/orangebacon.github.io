@@ -1,3 +1,8 @@
+:root {
+    --body-margin: 0.5em;
+    --max-width: 600px;
+}
+
 html {
     font: 1em sans-serif;
 }
@@ -11,8 +16,6 @@ body {
 }
 
 body> :not(nav) {
-    --body-margin: 10px;
-    --max-width: 600px;
     min-width: calc(min(var(--max-width), 100% - 2 * var(--body-margin)));
     max-width: var(--max-width);
     padding: var(--body-margin);
@@ -47,6 +50,10 @@ main {
 
 p {
     line-height: 1.5em;
+}
+
+body>footer {
+    padding: var(--body-margin);
 }
 
 header p,
