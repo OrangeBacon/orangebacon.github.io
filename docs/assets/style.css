@@ -1,23 +1,31 @@
 html {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
     font: 1em sans-serif;
-    line-height: 1.5em;
-    scrollbar-gutter: stable both-edges;
 }
 
 body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0;
+    background: #E6D1F2;
+}
+
+body> :not(nav) {
     --body-margin: 10px;
-    min-width: calc(min(600px, 100% - 2 * var(--body-margin)));
-    max-width: 600px;
-    margin: var(--body-margin);
+    --max-width: 600px min-width: calc(min(var(--max-width), 100% - 2 * var(--body-margin)));
+    max-width: var(--max-width);
+    padding: var(--body-margin);
+    box-sizing: border-box;
+    padding-top: 0;
 }
 
 nav {
-    border-bottom: 1px solid black;
-    padding-bottom: 0.5em;
     text-align: right;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 1em;
+    background: #B19CD8;
+    padding-bottom: 1.5em;
 }
 
 nav a {
@@ -30,10 +38,25 @@ nav a:hover {
     text-decoration: underline;
 }
 
+header,
+footer,
+main {
+    width: 100%;
+}
+
+p {
+    line-height: 1.5em;
+}
+
 header p,
 footer {
     font-size: 0.8em;
     color: gray;
+}
+
+main,
+main :first-child {
+    margin-top: 0;
 }
 
 ul.posts {
@@ -59,16 +82,16 @@ footer {
     padding-top: 0.5em;
 }
 
-.post_title {
+.post-title {
     display: flex;
     align-items: baseline;
 }
 
-.post_title h2 {
+.post-title h2 {
     margin-bottom: 0;
 }
 
-.post_title time {
+.post-title time {
     font-size: 0.8em;
     color: gray;
     padding-left: 0.5em;

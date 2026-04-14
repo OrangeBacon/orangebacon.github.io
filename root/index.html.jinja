@@ -11,7 +11,7 @@
     {% for post in posts | sort(reverse=true) if ".md" in post %}
         <li>
             <a href="{{ remove_extension(post) }}">
-                <div class="post_title">
+                <div class="post-title">
                     <h2>{{ posts[post]["title"] }}</h2>
                     <time datetime="{{ posts[post]["date"] }}">{{ posts[post]["date"] }}</time>
                 </div>
