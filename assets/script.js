@@ -10,8 +10,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const el = document.getElementById("light");
 
     const media = window.matchMedia("(prefers-color-scheme: dark)");
-    const stored = window.localStorage.getItem("dark-mode") === "true";
-    el.checked = stored ^ media.matches;
+    const stored = window.localStorage.getItem("dark-mode");
+    if (stored != null) {
+        el.checked = (stored === "true") ^ media.matches;
+    }
 
     el.addEventListener("change", lightToggle);
 });
