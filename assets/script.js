@@ -16,4 +16,4 @@
     }
 
     el.addEventListener("change", lightToggle);
-});
+})();
