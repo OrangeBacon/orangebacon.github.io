@@ -93,6 +93,17 @@ p {
     color: var(--text-colour);
 }
 
+code {
+    color: var(--text-colour);
+}
+
+hr {
+    border-bottom: 0;
+    border-style: solid;
+    border-color: var(--text-colour);
+    border-width: 1px;
+}
+
 h1,
 h2,
 h3,
@@ -100,10 +111,6 @@ h4,
 h5,
 h6 {
     color: var(--text-colour);
-}
-
-body>footer {
-    padding: calc(1em + var(--body-margin)) var(--body-margin);
 }
 
 header p,
@@ -133,11 +140,6 @@ ul.posts li a p {
 
 ul.posts li a:hover h2 {
     text-decoration: underline;
-}
-
-footer {
-    border-top: 1px solid var(--text-colour);
-    padding-top: 0.5em;
 }
 
 .post-title {

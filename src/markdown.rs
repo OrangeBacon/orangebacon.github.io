@@ -265,6 +265,7 @@ where
                 self.output.push(name.to_string());
                 Ok(())
             }
+            Tag::CodeBlock(_) => self.write("<pre><code>"),
             tag => todo!("impl {tag:?}"),
         }
     }
@@ -300,6 +301,7 @@ where
                 self.footnote_defs.insert(number, (name, note));
                 Ok(())
             }
+            TagEnd::CodeBlock => self.write("</code></pre>\n"),
             tag => todo!("impl {tag:?}"),
         }
     }
