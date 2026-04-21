@@ -97,6 +97,10 @@ code {
     color: var(--text-colour);
 }
 
+pre {
+    padding: 1em;
+}
+
 hr {
     border-style: solid;
     border-color: var(--text-colour);

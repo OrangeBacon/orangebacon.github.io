@@ -97,11 +97,15 @@ code {
     color: var(--text-colour);
 }
 
+pre {
+    padding: 1em;
+}
+
 hr {
-    border-bottom: 0;
     border-style: solid;
     border-color: var(--text-colour);
     border-width: 1px;
+    border-bottom: 0;
 }
 
 h1,
@@ -168,7 +172,6 @@ ul.posts li a:hover h2 {
 
 .footnote-definition {
     margin-block-start: 1em;
-    margin-block-end: 1em;
 }
 
 .footnote-definition-label {

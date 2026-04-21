@@ -31,7 +31,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut entries = SiteEntries::new();
     entries.handler(TemplateHandler);
     entries.handler(OutputTemplate);
-    entries.handler(MarkdownHandler);
+    entries.handler(MarkdownHandler::new());
     entries.handler(TextHandler);
 
     for entry in fs::read_dir(".")?.flatten().filter(file_filter) {

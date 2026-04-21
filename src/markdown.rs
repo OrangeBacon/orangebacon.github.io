@@ -5,8 +5,9 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use pulldown_cmark::{Event, HeadingLevel, Options, Parser, Tag, TagEnd};
+use pulldown_cmark::{CodeBlockKind, Event, HeadingLevel, Options, Parser, Tag, TagEnd};
 use pulldown_cmark_escape::{escape_href, escape_html, escape_html_body_text};
+use syntect::{highlighting::ThemeSet, html::highlighted_html_for_string, parsing::SyntaxSet};
 
 use crate::{
     file::{FileHandler, SiteEntries},
@@ -15,7 +16,19 @@ use crate::{
 
 /// File handler for markdown files.  Parses the markdown and puts it into the
 /// named template file.
-pub struct MarkdownHandler;
+pub struct MarkdownHandler {
+    syn_syntax: SyntaxSet,
+    syn_theme: ThemeSet,
+}
+
+impl MarkdownHandler {
+    pub fn new() -> Self {
+        Self {
+            syn_syntax: SyntaxSet::load_defaults_newlines(),
+            syn_theme: ThemeSet::load_defaults(),
+        }
+    }
+}
 
 impl FileHandler for MarkdownHandler {
     fn matches(&self, path: &Path) -> bool {
@@ -28,7 +41,7 @@ impl FileHandler for MarkdownHandler {
         options.insert(Options::ENABLE_FOOTNOTES);
         let parser = Parser::new_ext(&content, options);
 
-        let mut html = HtmlWriter::new(parser);
+        let mut html = HtmlWriter::new(parser, self);
         html.run().unwrap();
 
         let mut metadata: HashMap<_, _> = html
@@ -61,7 +74,7 @@ impl FileHandler for MarkdownHandler {
 
 /// HTML writer based on the original from pulldown_cmark, however inlined here
 /// to allow modification.
-struct HtmlWriter<I> {
+struct HtmlWriter<'a, I> {
     /// Iterator supplying events.
     iter: I,
 
@@ -88,13 +101,32 @@ struct HtmlWriter<I> {
 
     /// Map footnote number to definition content
     footnote_defs: HashMap<usize, (String, String)>,
+
+    /// If in a code block, this contains the language identifier, otherwise None
+    in_syntax: Option<String>,
+
+    /// Contents of the current code block
+    code_block: String,
+
+    // Syntax highlighting contexts
+    syn_syntax: &'a SyntaxSet,
+    syn_theme: &'a ThemeSet,
 }
 
-impl<'a, I> HtmlWriter<I>
+// let syntax = ps.find_syntax_by_extension("rs").unwrap();
+//         let mut h = HighlightLines::new(syntax, &ts.themes["base16-ocean.dark"]);
+//         let s = "pub struct Wow { hi: u64 }\nfn blah() -> u64 {}";
+//         for line in LinesWithEndings::from(s) {
+//             let ranges: Vec<(Style, &str)> = h.highlight_line(line, &ps).unwrap();
+//             let escaped = as_24_bit_terminal_escaped(&ranges[..], true);
+//             print!("{}", escaped);
+//         }
+
+impl<'a, I> HtmlWriter<'a, I>
 where
     I: Iterator<Item = Event<'a>>,
 {
-    fn new(iter: I) -> Self {
+    fn new(iter: I, markdown: &'a MarkdownHandler) -> Self {
         Self {
             iter,
             output: MultiString::default(),
@@ -105,6 +137,10 @@ where
             introduction: String::new(),
             footnote_links: HashMap::new(),
             footnote_defs: HashMap::new(),
+            in_syntax: None,
+            code_block: String::new(),
+            syn_syntax: &markdown.syn_syntax,
+            syn_theme: &markdown.syn_theme,
         }
     }
 
@@ -131,6 +167,8 @@ where
                 Event::Text(text) => {
                     if self.in_metadata {
                         self.metadata.push_str(&text);
+                    } else if self.in_syntax.is_some() {
+                        self.code_block.push_str(&text);
                     } else {
                         if self.in_intro {
                             self.introduction.push_str(&text);
@@ -265,7 +303,15 @@ where
                 self.output.push(name.to_string());
                 Ok(())
             }
-            Tag::CodeBlock(_) => self.write("<pre><code>"),
+            Tag::CodeBlock(kind) => {
+                self.in_intro = false;
+                self.in_syntax = Some(match kind {
+                    CodeBlockKind::Indented => String::new(),
+                    CodeBlockKind::Fenced(s) => s.to_string(),
+                });
+                self.code_block = String::new();
+                Ok(())
+            }
             tag => todo!("impl {tag:?}"),
         }
     }
@@ -301,9 +347,30 @@ where
                 self.footnote_defs.insert(number, (name, note));
                 Ok(())
             }
-            TagEnd::CodeBlock => self.write("</code></pre>\n"),
+            TagEnd::CodeBlock => self.highlighted_code(),
             tag => todo!("impl {tag:?}"),
         }
+    }
+
+    fn highlighted_code(&mut self) -> Result<(), Box<dyn Error>> {
+        let syntax = self.in_syntax.take().unwrap_or_default();
+
+        let syntax = self
+            .syn_syntax
+            .find_syntax_by_token(&syntax)
+            .unwrap_or_else(|| {
+                eprintln!("Unknown Language: '{syntax}'");
+                self.syn_syntax.find_syntax_plain_text()
+            });
+
+        let out = highlighted_html_for_string(
+            &self.code_block,
+            self.syn_syntax,
+            syntax,
+            &self.syn_theme.themes["base16-ocean.dark"],
+        )?;
+
+        self.write(&out)
     }
 }
 
