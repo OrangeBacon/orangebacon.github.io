@@ -22,11 +22,10 @@ use crate::{
 pub const OUTPUT_DIR: &str = "docs";
 
 fn main() -> Result<(), Box<dyn Error>> {
-    // remove the old output directory, ignore if it fails
-    _ = fs::remove_dir_all(OUTPUT_DIR);
+    remove_old()?;
 
-    // create the new output directory
-    fs::create_dir(OUTPUT_DIR)?;
+    // create the new output directory, if already exists ignore the error
+    _ = fs::create_dir(OUTPUT_DIR);
 
     let mut entries = SiteEntries::new();
     entries.handler(TemplateHandler);
@@ -63,6 +62,7 @@ fn file_filter(entry: &DirEntry) -> bool {
         OUTPUT_DIR,      // the output directory
         ".git",          // git metadata
         ".devcontainer", // used for github codespaces
+        ".vscode",       // visual studio code metadata
         "target",        // rust build files
         "src",           // source code to the generator
     ]
@@ -80,6 +80,27 @@ fn process_entry(entries: &mut SiteEntries, entry: &DirEntry) -> Result<(), Box<
     } else {
         let content = fs::read_to_string(&path)?;
         entries.add(path, content);
+    }
+
+    Ok(())
+}
+
+/// remove the output directory to clear the previous build files, however keep
+/// the `.git` file from git worktree
+fn remove_old() -> Result<(), Box<dyn Error>> {
+    let Ok(dir) = fs::read_dir(OUTPUT_DIR) else {
+        // the output dir doesn't exist, no issue
+        return Ok(());
+    };
+
+    for item in dir {
+        let item = item?;
+        let path = item.path();
+        if path.is_dir() {
+            fs::remove_dir_all(path)?;
+        } else if !path.ends_with(".git") {
+            fs::remove_file(path)?;
+        }
     }
 
     Ok(())
