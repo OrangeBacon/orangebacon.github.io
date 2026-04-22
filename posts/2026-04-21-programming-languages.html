@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Choosing a Programming Language | Ella's Writing</title>
+    <meta name="viewport" content="width=device-width" />
+    <link rel="stylesheet" href="/assets/style.css">
+    <meta name="color-scheme" content="dark light">
+    <script src="/assets/script.js" defer></script>
+</head>
+
+<body>
+    <nav>
+        <a href="/">Ella's Writing</a>
+        <input type="checkbox" id="light" title="Light/dark mode theme toggle">
+    </nav>
+
+    
+<header>
+    <h1>Choosing a Programming Language</h1>
+    <p>Written by Ella on <time datetime="2026-04-21">2026-04-21</time></p>
+</header>
+
+<main>
+    <p>I thought I would give a few opinions about some of the programming languages I have used (even if a little briefly).<sup class="footnote-reference"><a href="#fn-1">1</a></sup></p>
+<h2>Rust</h2>
+<pre style="background-color:#2b303b;">
+<span style="color:#b48ead;">fn </span><span style="color:#8fa1b3;">main</span><span style="color:#c0c5ce;">() {
+</span><span style="color:#c0c5ce;">  println!(&quot;</span><span style="color:#a3be8c;">Hello, World!</span><span style="color:#c0c5ce;">&quot;);
+</span><span style="color:#c0c5ce;">}
+</span></pre>
+<p>Rust is the main language I use, and is the one that I have the most experience with, so I am likely biased towards using it.  A lot of the code I have written is command-line applications, which run directly on the user's computer.</p>
+<p>Rust doesn't work particularly well for web development in my opinion.  It can be used easily via web assembly, which I think would be good for isolated parts of websites, however using anything that isn't HTML &amp; CSS for a website is, in my opinion, the wrong approach.</p>
+<p>I like how strict the type system is, using type driven design has helped me get code right more often than I did with a less strict language.  I also enjoy things like pattern matching and how the language encourages good code architecture as it is pretty much required by the borrow checker.  This does make it slower to write though, especially for experiments.</p>
+<p>However, a lot of libraries for game development and graphics are all oriented around c++, which makes some projects that I would be interested in a lot harder to write in rust.</p>
+<h2>C++</h2>
+<pre style="background-color:#2b303b;">
+<span style="color:#b48ead;">#include </span><span style="color:#c0c5ce;">&lt;</span><span style="color:#a3be8c;">print</span><span style="color:#c0c5ce;">&gt;
+</span><span style="color:#b48ead;">void </span><span style="color:#8fa1b3;">main</span><span style="color:#c0c5ce;">() {
+</span><span style="color:#c0c5ce;">  </span><span style="color:#8fa1b3;">std::println</span><span style="color:#c0c5ce;">(&quot;</span><span style="color:#a3be8c;">Hello, World!</span><span style="color:#c0c5ce;">&quot;);
+</span><span style="color:#c0c5ce;">}
+</span></pre>
+<p>I've used c++ before, however the initial reason I moved away from it was having to deal with cmake.  Having an easy to use build system would make c++ a lot more attractive to me, however I haven't tried more recent cmake versions, and I have heard that there have been improvements within the last couple of years.</p>
+<p>C++ is a very complex language and there are lots of places where I have and will likely make mistakes that are hard to see unless you have a lot of experience with c++, especially in memory safety and correctness of code in edge cases.  Rust solves a lot of these issues for me, however some parts of c++ can be more expressive than rust, for example specialisation and generics vs templates.</p>
+<h2>C</h2>
+<pre style="background-color:#2b303b;">
+<span style="color:#b48ead;">#include </span><span style="color:#c0c5ce;">&lt;</span><span style="color:#a3be8c;">stdio</span><span style="color:#c0c5ce;">&gt;
+</span><span style="color:#b48ead;">void </span><span style="color:#8fa1b3;">main</span><span style="color:#c0c5ce;">() {
+</span><span style="color:#c0c5ce;">  </span><span style="color:#96b5b4;">printf</span><span style="color:#c0c5ce;">(&quot;</span><span style="color:#a3be8c;">Hello, World!</span><span style="color:#c0c5ce;">&quot;);
+</span><span style="color:#c0c5ce;">}
+</span></pre>
+<p>I used to write code in C, but no longer feel like it is the right language for me to be using all the time.  I did enjoy the simplicity of C, but that is also a downside to me, in that it is harder to write more complex code, in particular generic code is nearly impossible without macros or lots of <code>void*</code>.  The code is also going to be longer, given the lack of abstractions, which makes it more time consuming and error-prone to use, however it is easier to know exactly what is happening in the code.  C is also required for lots of embedded code, as there are lots of microcontrollers that only have C toolchains and aren't supported by other languages.</p>
+<h2>Zig</h2>
+<pre style="background-color:#2b303b;">
+<span style="color:#c0c5ce;">const std = @import(&quot;std&quot;);
+</span><span style="color:#c0c5ce;">
+</span><span style="color:#c0c5ce;">pub fn main() void {
+</span><span style="color:#c0c5ce;">    std.debug.print(&quot;Hello, World!\n&quot;);
+</span><span style="color:#c0c5ce;">}
+</span></pre>
+<p>Zig seemed like a cool language, but not the right one for me, when I tried it.  The language is very explicit about pretty much everything, including allocators and all control flow, which is much better than c is in my opinion.</p>
+<p>I feel like zig is too low level of a language for me though, you can still easily segfault or cause undefined behaviour like in c and c++, where as it is much harder in (safe) rust.  I enjoy programming, itself, but I don't especially enjoy the debugging and how much harder it is to debug a segfault compared with a logic issue.</p>
+<p>The <code>comptime</code> parts of zig seem to me to be both really useful and add a significant amount of complexity to the language.  It is hard to know exactly what inputs are required for each function, with all the type based code being dynamically typed at compile time. This makes it harder to work out if the code is correct, like with any dynamically typed language.  I also don't like how this means that code that isn't run, isn't type checked, unlike a lot of other statically typed languages. (I am aware that most of these apply to c++ too)</p>
+<h2>C#</h2>
+<pre style="background-color:#2b303b;">
+<span style="color:#b48ead;">class </span><span style="color:#ebcb8b;">Program </span><span style="color:#eff1f5;">{
+</span><span style="color:#eff1f5;">  </span><span style="color:#b48ead;">static void </span><span style="color:#8fa1b3;">Main</span><span style="color:#eff1f5;">() {
+</span><span style="color:#eff1f5;">    </span><span style="color:#bf616a;">System</span><span style="color:#eff1f5;">.</span><span style="color:#bf616a;">Console</span><span style="color:#eff1f5;">.</span><span style="color:#8fa1b3;">WriteLine</span><span style="color:#eff1f5;">(</span><span style="color:#c0c5ce;">&quot;</span><span style="color:#a3be8c;">Hello, World</span><span style="color:#c0c5ce;">&quot;</span><span style="color:#eff1f5;">);
+</span><span style="color:#eff1f5;">  }
+</span><span style="color:#eff1f5;">}
+</span></pre>
+<p>I think that C# has come a long way since last time I used it, in particular with the dotnet cli, AOT compilation, actual cross platform support, and now pattern matching (yes its been many years).  It wouldn't be suitable for cli development as much due to the large binary sizes (due to including a garbage collector, etc) and slower start time than a native language, but for scripting tasks such as in game development, C# seems like a really good language.</p>
+<h2>JavaScript</h2>
+<pre style="background-color:#2b303b;">
+<span style="color:#c0c5ce;">console.</span><span style="color:#96b5b4;">log</span><span style="color:#c0c5ce;">(&quot;</span><span style="color:#a3be8c;">Hello, World!</span><span style="color:#c0c5ce;">&quot;);
+</span></pre>
+<p>I've used JavaScript because I have to for websites, however it isn't my favourite language.  I generally prefer static typing, which JS very much isn't.  The biggest issue I have, however, with JS is its ecosystem.  Everything about compiling and using JS is very complicated and slow, with JS compilation potentially taking longer than native code generation.  So many different tools and frameworks are used, all of which seem really complicated and come with their own learning points and more tooling, which generally make it very hard to actually get started with a JS application without already knowing what you are doing.</p>
+<h2>Typescript</h2>
+<pre style="background-color:#2b303b;">
+<span style="color:#c0c5ce;">console.log(&quot;Hello, World!&quot;);
+</span></pre>
+<p>Typescript solves some of the issues I have with JS, notably with the lack of static typing, yet makes the ecosystem issue worse.  TS has to be compiled and checked, it cannot be run directly so it is yet another layer of tooling to manage and understand.</p>
+<p>Additionally, the types are all erased at run-time, and can potentially be wrong.  The type system is really easy to get around and pass wrong types.  It also has very complicated types which can be even harder to understand than the code they annotate.</p>
+<p>I can see how TS is useful for a team which has a big codebase with an already existing build system and lots of collaboration, yet I don't think it is the right thing for me as an individual.</p>
+<h2>Conclusion</h2>
+<p>This honestly doesn't conclude in any particular way with languages being "good" or "bad", instead they all have different use cases and I would potentially use many different languages depending on where they are being used.</p>
+<hr />
+<div class="footnote-definition" id="fn-1"><span class="footnote-definition-label">1: </span><p>Yes the code blocks are here to test the syntax highlighter in the static site generator oops!</p>
+</div>
+
+</main>
+
+
+    <footer>
+        <hr>
+        <p>Ella's Writing &copy; 2026 by Ella is licensed under CC BY-SA-NC 4.0</p>
+    </footer>
+</body>
+
+</html>
