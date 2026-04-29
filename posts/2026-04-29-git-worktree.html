@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Pages workflow | Ella's Writing</title>
+    <meta name="viewport" content="width=device-width" />
+    <link rel="stylesheet" href="/assets/style.css">
+    <meta name="color-scheme" content="dark light">
+    <script src="/assets/script.js" defer></script>
+</head>
+
+<body>
+    <nav>
+        <a href="/">Ella's Writing</a>
+        <input type="checkbox" id="light" title="Light/dark mode theme toggle">
+    </nav>
+
+    
+<header>
+    <h1>Pages workflow</h1>
+    <p>Written by Ella on <time datetime="2026-04-29">2026-04-29</time></p>
+</header>
+
+<main>
+    <p>A quick look at how I publish this website.</p>
+<h2>Hosting and Publishing</h2>
+<p>This website (at least at the time of writing) is hosted on GitHub pages<sup class="footnote-reference"><a href="#fn-1">1</a></sup>.</p>
+<p>In order to publish on GitHub pages, there are several main methods.
+Use actions to build your website and upload the build output files as your website.
+Use the root of your repository as the website and host the file system directly.  Optionally builds the repository using the Jekyll static site builder (unless a <code>.nojekyll</code> file is included)
+Same as 2, but uses the <code>/docs</code> folder.
+Same as 2, but uses the root of the <code>gh-pages</code> branch.</p>
+<p>Personally, I don't like option 1.  It allows building the site however you want, however requires you to get the build system to work on GitHub actions, with all the weird yaml files that requires.  You also cannot see what the actual code being hosted is.</p>
+<p>The other methods all have the option of using Jekyll to build the site.  Personally that isn't useful, as I'd like to write the site generator myself to make it easier to control exactly what is output.</p>
+<p>That leaves 3 options which all require the exact files which will be hosted to be within the repository.  With option 2, it doesn't really work for having your own build system files be within the repository as it will host your source code instead as well as your website.</p>
+<p>Option 3 is the one I previously used.  The /docs folder contained the output of the build system.  This has the issue that you will have your build artifacts committed to the repository and you have to remember to not add all updated artifacts if you want to add to the code only.  It also makes your git history messy, with constant changes to the artifacts, e.g. a minor change to a template file becomes a change on all built files.  It has the advantage however, that it is very easy to setup a build system to output to a folder within your repository.</p>
+<p>Option 4 is the one I now use.  I initially didn't use it as it seemed hard to work out how to build the website and push the build files to a different branch.  Now I've worked out how, the messy history of the build artifacts can be in one branch and the code is in another branch.</p>
+<h2>Git Workflow</h2>
+<p>So, here is how I have managed to make option 4 work:</p>
+<h3>Step 0:</h3>
+<p>Ensure everything is committed already incase anything gets removed or done wrong.</p>
+<h3>Step 1 - Create a new branch for the build files:</h3>
+<pre style="background-color:#2b303b;">
+<span style="color:#8fa1b3;">git</span><span style="color:#c0c5ce;"> checkout</span><span style="color:#bf616a;"> --orphan</span><span style="color:#c0c5ce;"> gh-pages
+</span><span style="color:#8fa1b3;">git</span><span style="color:#c0c5ce;"> rm</span><span style="color:#bf616a;"> -rf</span><span style="color:#c0c5ce;"> .
+</span><span style="color:#8fa1b3;">git</span><span style="color:#c0c5ce;"> commit</span><span style="color:#bf616a;"> --allow-empty -m </span><span style="color:#c0c5ce;">&quot;</span><span style="color:#a3be8c;">Initial deploy</span><span style="color:#c0c5ce;">&quot;
+</span><span style="color:#8fa1b3;">git</span><span style="color:#c0c5ce;"> push</span><span style="color:#bf616a;"> --set-upstream</span><span style="color:#c0c5ce;"> origin gh-pages
+</span></pre>
+<p>This creates the branch and pushes it.  You could add initial build files instead of an empty commit.  Note that this removes all files from the repository!</p>
+<p>If the branch already exists, you don't have to do this step.</p>
+<h3>Step 2 - Setup your repository:</h3>
+<pre style="background-color:#2b303b;">
+<span style="color:#8fa1b3;">git</span><span style="color:#c0c5ce;"> checkout main
+</span></pre>
+<p>You will then have to choose the name of your build directory.  I have chosen <code>/build</code> in here, however you can pick whatever you want.</p>
+<p>Add <code>/build</code> to your <code>.gitignore</code> file (make one if you don't already have one).  Git metadata and your build files will be created within the folder that shouldn't be committed to the main branch.</p>
+<pre style="background-color:#2b303b;">
+<span style="color:#8fa1b3;">git</span><span style="color:#c0c5ce;"> worktree add build gh-pages
+</span></pre>
+<p>This creates a view of the gh-pages branch you created in step 2 within the <code>/build</code> directory.</p>
+<h3>Step 3 - Build and commit:</h3>
+<p>Run your code to put the website's built files within the <code>/build</code> directory.  Note that the folder will contain a <code>.git</code> file, which should NOT be removed by your build scripts! This means you cannot just delete the build directory to remove old artifacts.</p>
+<p>Then, to commit your built files:</p>
+<pre style="background-color:#2b303b;">
+<span style="color:#96b5b4;">cd</span><span style="color:#c0c5ce;"> build
+</span><span style="color:#8fa1b3;">git</span><span style="color:#c0c5ce;"> add .
+</span><span style="color:#8fa1b3;">git</span><span style="color:#c0c5ce;"> commit</span><span style="color:#bf616a;"> -m </span><span style="color:#c0c5ce;">&quot;</span><span style="color:#a3be8c;">Deploy</span><span style="color:#c0c5ce;">&quot;
+</span><span style="color:#8fa1b3;">git</span><span style="color:#c0c5ce;"> push
+</span></pre>
+<p>In my case, the git UI within vscode can display the build directory as a worktree with a separate commit button, without having to run the above commands manually.</p>
+<h3>Step 4 - Done</h3>
+<p>That's it!  Use <code>git commit</code> from the root of the repository to update the code and from the build directory to deploy.</p>
+<hr />
+<div class="footnote-definition" id="fn-1"><span class="footnote-definition-label">1: </span><p>There are lots of issues with GitHub that I'm well aware of, not least its awful uptime.  I still use it because it offers a lot of free computer time, in particular with GitHub.dev, which I use as I'm not convinced my old laptop would survive being used as a development server while I'm procrastinating at work by writing here!  Also the free web hosting is nice, I don't feel like putting £10/month on a vps &amp; domain name.  Would be nice at some point though, could maybe even experiment with having dynamic backend code.</p>
+</div>
+
+</main>
+
+
+    <footer>
+        <hr>
+        <p>Ella's Writing &copy; 2026 by Ella is licensed under CC BY-SA-NC 4.0</p>
+    </footer>
+</body>
+
+</html>
