@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Writing a Programming Language | Ella's Writing</title>
+    <meta name="viewport" content="width=device-width" />
+    <link rel="stylesheet" href="/assets/style.css">
+    <meta name="color-scheme" content="dark light">
+    <script src="/assets/script.js" defer></script>
+</head>
+
+<body>
+    <nav>
+        <a href="/">Ella's Writing</a>
+        <input type="checkbox" id="light" title="Light/dark mode theme toggle">
+    </nav>
+
+    
+<header>
+    <h1>Writing a Programming Language</h1>
+    <p>Written by Ella on <time datetime="2026-05-26">2026-05-26</time></p>
+</header>
+
+<main>
+    <p>What I'm intending on writing here is more about what I've implemented within this language, rather than specifically trying to be a tutorial on writing your own programming language.  I therefore, assume you have some background information about how programming languages work already.  For this post, the main sources I used were <a href="https://craftinginterpreters.com/">Crafting Interpreters</a>, and the <a href="https://www.lua.org/manual/5.5/manual.html">lua reference manual</a>.</p>
+<h2>Architecture</h2>
+<p>Writing a programming language is a big project, with many different parts to write, therefore having a good interface between each section and being clear as to what is being done is a good place to start in my opinion.</p>
+<p>Below is a high-level overview of the stages that I'm planning within the language. Some of these stages may run multiple times, and some are significantly more complex than others, but this is good enough to get started.</p>
+<svg xmlns='http://www.w3.org/2000/svg' style='font-size:initial;' viewBox="0 0 472.32 346.32">
+<path d="M182.16,92.16L290.16,92.16L290.16,20.16L182.16,20.16Z"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<text x="236.16" y="56.16" text-anchor="middle" fill="rgb(255,255,255)" dominant-baseline="central">Lexer</text>
+<polygon points="362.16,56.16 350.64,60.48 350.64,51.84" style="fill:rgb(255,255,255)"/>
+<path d="M290.16,56.16L356.4,56.16"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<path d="M362.16,92.16L470.16,92.16L470.16,20.16L362.16,20.16Z"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<text x="416.16" y="56.16" text-anchor="middle" fill="rgb(255,255,255)" dominant-baseline="central">Parser</text>
+<polygon points="416.16,128.16 411.84,116.64 420.48,116.64" style="fill:rgb(255,255,255)"/>
+<path d="M416.16,92.16L416.16,122.4"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<path d="M362.16,200.16L470.16,200.16L470.16,128.16L362.16,128.16Z"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<text x="416.16" y="164.16" text-anchor="middle" fill="rgb(255,255,255)" dominant-baseline="central">Typechecker</text>
+<polygon points="290.16,164.16 301.68,159.84 301.68,168.48" style="fill:rgb(255,255,255)"/>
+<path d="M362.16,164.16L295.92,164.16"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<path d="M182.16,200.16L290.16,200.16L290.16,128.16L182.16,128.16Z"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<text x="236.16" y="164.16" text-anchor="middle" fill="rgb(255,255,255)" dominant-baseline="central">Optimiser</text>
+<polygon points="110.16,164.16 121.68,159.84 121.68,168.48" style="fill:rgb(255,255,255)"/>
+<path d="M182.16,164.16L115.92,164.16"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<path d="M2.16,200.16L110.16,200.16L110.16,128.16L2.16,128.16Z"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<text x="56.16" y="154.08" text-anchor="middle" fill="rgb(255,255,255)" dominant-baseline="central">Code</text>
+<text x="56.16" y="174.24" text-anchor="middle" fill="rgb(255,255,255)" dominant-baseline="central">Generator</text>
+<polygon points="56.16,236.16 51.84,224.64 60.48,224.64" style="fill:rgb(255,255,255)"/>
+<path d="M56.16,200.16L56.16,230.4"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<path d="M20.16,344.16L92.16,344.16L92.16,257.76L70.56,236.16L20.16,236.16Z"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<path d="M70.56,236.16L70.56,257.76L92.16,257.76"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<text x="56.16" y="280.08" text-anchor="middle" fill="rgb(255,255,255)" dominant-baseline="central">Output</text>
+<text x="56.16" y="300.24" text-anchor="middle" fill="rgb(255,255,255)" dominant-baseline="central">Code</text>
+<polygon points="164.16,290.16 152.64,294.48 152.64,285.84" style="fill:rgb(255,255,255)"/>
+<path d="M92.16,290.16L158.4,290.16"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<path d="M164.16,290.16L236.16,344.16L308.16,290.16L236.16,236.16Z"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<text x="236.16" y="290.16" text-anchor="middle" fill="rgb(255,255,255)" dominant-baseline="central">Execution</text>
+<path d="M20.16,110.16L92.16,110.16L92.16,23.76L70.56,2.16L20.16,2.16Z"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<path d="M70.56,2.16L70.56,23.76L92.16,23.76"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<text x="56.16" y="46.08" text-anchor="middle" fill="rgb(255,255,255)" dominant-baseline="central">Source</text>
+<text x="56.16" y="66.24" text-anchor="middle" fill="rgb(255,255,255)" dominant-baseline="central">Code</text>
+<polygon points="182.16,56.16 170.64,60.48 170.64,51.84" style="fill:rgb(255,255,255)"/>
+<path d="M92.16,56.16L176.4,56.16"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+</svg>
+<p>As I said previously, the main stage I haven't really experimented with here is the type checker, although there is lots of different ideas I have for pretty much all the stages.  I could start this project with pretty much any of the sections, however I have decided that it would be easiest to start from the beginning, so I have an easy way to provide input to the program, without having to write data structures manually to provide type system input.</p>
+<p>The majority of information that I have found about writing programming languages focuses on the academic side, with the languages being written being pure functional languages.  Most commonly used programming languages are not either pure or functional, lua is neither, I am not planning on changing that.  Therefore, we will be working on dealing with the complexity of a real programming language, how it isn't perfect for type systems and how most academic literature doesn't directly apply to what I'm doing here.</p>
+<p>Lets start then, with a parser.  There has been a lot written about different ways to parse source code, there are endless different ways to write a parser.  I have decided to go with a hand written recursive decent parser, due to how easy they are to write, so I can move on to more interesting parts of the language.</p>
+<h2>Lexing</h2>
+<p>Before the parser, we have a lexer, which converts the raw character stream of a source file into a stream of tokens which will be consumed by the parser.  For each token we recode a little bit of information:</p>
+<pre style="background-color:#2b303b;">
+<span style="color:#b48ead;">struct </span><span style="color:#c0c5ce;">Token&lt;</span><span style="color:#b48ead;">&#39;a</span><span style="color:#c0c5ce;">&gt; {
+</span><span style="color:#c0c5ce;">    </span><span style="color:#bf616a;">kind</span><span style="color:#c0c5ce;">: TokenKind,
+</span><span style="color:#c0c5ce;">    </span><span style="color:#bf616a;">value</span><span style="color:#c0c5ce;">: &amp;</span><span style="color:#b48ead;">&#39;a str</span><span style="color:#c0c5ce;">,
+</span><span style="color:#c0c5ce;">    </span><span style="color:#bf616a;">line</span><span style="color:#c0c5ce;">: </span><span style="color:#b48ead;">usize</span><span style="color:#c0c5ce;">,
+</span><span style="color:#c0c5ce;">}
+</span><span style="color:#c0c5ce;">
+</span><span style="color:#b48ead;">enum </span><span style="color:#c0c5ce;">TokenKind {
+</span><span style="color:#c0c5ce;">    Number, Name, And, Function, </span><span style="color:#65737e;">// ...
+</span><span style="color:#c0c5ce;">}
+</span><span style="color:#c0c5ce;">
+</span></pre>
+<p>Each token contains a reference into the original source file that it was created from, this makes it easier to read the text later on in the parser, although it does mean that it is harder to store the individual tokens.  We store the line number for providing diagnostics for the file, although it isn't particularly accurate, especially if you have a long line of code.</p>
+<p>The <code>TokenKind</code> enum identifies what is within the token.  The lexer tries to identify keywords such as <code>function</code> and <code>if</code> so they can be distinguished from other identifiers (or <code>Name</code>s to use lua's terminology).  This makes it easy for the parser to match directly on any keywords, without having to repeatedly check for string equality.</p>
+<p>Number tokens in source code are writen using characters, where as in the program, they will be represented by the actual number, as floats or integers.  The work to convert a number token to is actual value is pretty similar to the work to identify the bounds of the number within the source code.  I could convert numbers to their value within the lexer and store that result within the token, however that would increase the size of all tokens.  I therefore, will do the conversion later on, once parsing has finished, even though this feels slightly like duplication of work.  The same also applies to string values and parsing of any possible escape sequences.</p>
+<p>I have chosen to make the lexer run at the same time as the parser.  Instead of running the lexer to completion and storing the tokens in a list, I have structured the lexer to work as an iterator.  This avoids creating a list of tokens that will then immediately be consumed by the parser.</p>
+<h2>AST</h2>
+<p>Before writing the parser, we need to work out what data it will produce.  An Abstract Syntax Tree (AST) contains a portion of the information from the source code, skipping over a lot of the details which are not needed later on in the program.  The type system doesn't care about individual brackets being represented in the same way as the user typed.</p>
+<p>Modern compilers typically have been moving away from the parser output being an AST.  Instead, some compilers output a Concrete Syntax Tree (CST) (Examples include C#'s Roslyn and Rust Analyser).  This would include all characters from the source file within the tree, even the whitespace and comments.  This tree would typically be un-typed, and the AST would be a typed view over the tree.  Using a CST is useful if you are writing an language server, an auto formatter, or want to know whether a change was just to the whitespace, but generally can be avoided for the case of a traditional batch compiler.  Avoiding a CST is therefore what we will be doing here to simplify things.</p>
+<p>For function names, the lua reference manual describes them using the following syntax description:</p>
+<pre style="background-color:#2b303b;">
+<span style="color:#c0c5ce;">funcname ::= Name {‘.’ Name} [‘:’ Name]
+</span></pre>
+<p>I have translated this into a rust structure to be produced by the parser:</p>
+<pre style="background-color:#2b303b;">
+<span style="color:#b48ead;">struct </span><span style="color:#c0c5ce;">FunctionName&lt;</span><span style="color:#b48ead;">&#39;a</span><span style="color:#c0c5ce;">&gt; {
+</span><span style="color:#c0c5ce;">    </span><span style="color:#bf616a;">names</span><span style="color:#c0c5ce;">: Vec&lt;Token&lt;</span><span style="color:#b48ead;">&#39;a</span><span style="color:#c0c5ce;">&gt;&gt;,
+</span><span style="color:#c0c5ce;">    </span><span style="color:#bf616a;">method</span><span style="color:#c0c5ce;">: Option&lt;Token&lt;</span><span style="color:#b48ead;">&#39;a</span><span style="color:#c0c5ce;">&gt;&gt;,
+</span><span style="color:#c0c5ce;">}
+</span><span style="color:#c0c5ce;">
+</span></pre>
+<p>This struct includes all the useful information from the original description, while not including the <code>.</code> and <code>:</code> tokens.</p>
+<p>This AST contains the tokens directly, which means it has to contain the lifetime parameter from the tokens.  This is a pain to store and manipulate further through the program, so future stages of the compiler will remove this reference to the initial source code.</p>
+<p>An improvement to the AST could be to reduce all the allocations within it.  This structure has a bad cache locality as different parts of the AST could be spread anywhere throughout memory.  Additionally, the destruction and creation is slow due to having to recursively call malloc and free to create and destroy the structure.  A flattened AST would solve both these issues, so could be an improvement to be implemented in the future.</p>
+<h2>Parsing</h2>
+<p>The parser is a recursive descent parser that pretty much follows the design of the lua grammar, with functions for each line of the grammar.  For expression parsing, I use a Pratt parser, which can handle precedence, associativity, and some operators being both prefix and infix (unary minus vs subtract).  The grammar of lua does not include anything about this precedence, with it being represented in text.  The Pratt parser pretty much follows the design set out in Crafting Interpreters, just ported to rust, with the main difference being the language itself.</p>
+<p>While writing the parser, there was one main difference between the C version in Crafting Interpreters and the Rust I've written.  The table that drives the Pratt parser is defined in C as:</p>
+<pre style="background-color:#2b303b;">
+<span style="color:#c0c5ce;">ParseRule rules[] = {
+</span><span style="color:#c0c5ce;">    [TOKEN_LEFT_PAREN]    = {grouping, </span><span style="color:#d08770;">NULL</span><span style="color:#c0c5ce;">,   PREC_NONE},
+</span><span style="color:#c0c5ce;">    [TOKEN_RIGHT_PAREN]   = {</span><span style="color:#d08770;">NULL</span><span style="color:#c0c5ce;">,     </span><span style="color:#d08770;">NULL</span><span style="color:#c0c5ce;">,   PREC_NONE},
+</span><span style="color:#c0c5ce;">    ...
+</span><span style="color:#c0c5ce;">}
+</span></pre>
+<p>This exact structure cannot be represented in rust as is.  The <code>ParseRule</code> struct contains 2 function pointers, which can be set to <code>NULL</code>, which isn't allowed in Rust.  Additionally the table is indexed by an Enum, there aren't any easy ways to write an array constructed in the same way as in C (The table constructor in lua does allow pretty much the same syntax as c though!).</p>
+<p>Working around the enum indexing is relatively easy as the table isn't modified at all.  This means that I can translate it into a match expression:</p>
+<pre style="background-color:#2b303b;">
+<span style="color:#b48ead;">match</span><span style="color:#c0c5ce;"> token.kind {
+</span><span style="color:#c0c5ce;">    LeftParen =&gt; (),
+</span><span style="color:#c0c5ce;">    RightParen =&gt; (),
+</span><span style="color:#c0c5ce;">    ...
+</span><span style="color:#c0c5ce;">}
+</span></pre>
+<p>The harder part, to me, is what should be put in each match arm and the types involved.  In order to have a nullable function pointer, the translation to rust is <code>Option&lt;fn()&gt;</code>.  Each of the parse functions to be put in the table will require access to the parser and will need to output the AST for the expression it has parsed.  The return type, therefore, should be <code>ast::Expression&lt;'a&gt;</code> and the functions need to take an argument of <code>&amp;mut Parser&lt;'a&gt;</code>, making the function type <code>fn(&amp;mut Parser&lt;'a&gt;) -&gt; ast::Expression&lt;'a&gt;</code>.  In this signature, the lifetimes need to come from somewhere.  This requires introducing a 'Higher Ranked Trait Bound' (hrtb), which makes the final type<sup class="footnote-reference"><a href="#fn-1">1</a></sup>:</p>
+<pre style="background-color:#2b303b;">
+<span style="color:#c0c5ce;">Option&lt;for&lt;</span><span style="color:#b48ead;">&#39;a</span><span style="color:#c0c5ce;">&gt; </span><span style="color:#b48ead;">fn</span><span style="color:#c0c5ce;">(&amp;</span><span style="color:#b48ead;">mut </span><span style="color:#c0c5ce;">Parser&lt;</span><span style="color:#b48ead;">&#39;a</span><span style="color:#c0c5ce;">&gt;) -&gt; ast::Expression&lt;</span><span style="color:#b48ead;">&#39;a</span><span style="color:#c0c5ce;">&gt;&gt;
+</span></pre>
+<p>Now we have the type signature, we have to consider how to construct values of this type.  The easiest options is to use the rust syntax for constructing structs:</p>
+<pre style="background-color:#2b303b;">
+<span style="color:#c0c5ce;">ParseRule { prefix: Some(grouping), infix: None, precedence: None }
+</span></pre>
+<p>This, while clear, is really verbose, especially once we've repeated it for all 50 odd token kinds. (Actually, I just went and counted them, I think its 60, not 50).</p>
+<p>An alternative would be to use a constructor function:</p>
+<pre style="background-color:#2b303b;">
+<span style="color:#c0c5ce;">ParseRule::new(Some(grouping), None, None)
+</span></pre>
+<p>This is still repetitive, and yet less clear than the built in syntax, in my opinion.  I have tried a few ways of fixing this, however none of them ended up working.  Both of the attempts failed due to an issue I was only vaguely aware of: all rust function types are unique, even when they aren't closures.  This means that the type of an individual function might be <code>fn() {myFn}</code>.  Typically this would not have any effect on normal code, you can pass the function into another function without thinking about it at all.  One place where it does matter is within trait resolution.</p>
+<p>If you have the function:</p>
+<pre style="background-color:#2b303b;">
+<span style="color:#b48ead;">fn </span><span style="color:#8fa1b3;">example</span><span style="color:#c0c5ce;">(</span><span style="color:#bf616a;">f</span><span style="color:#c0c5ce;">: impl Into&lt;</span><span style="color:#b48ead;">fn</span><span style="color:#c0c5ce;">()&gt;) { todo!() }
+</span></pre>
+<p>then when rust is checking <code>example(myFn)</code> it will complain that <code>fn() {myFn}</code> doesn't impl <code>Into&lt;fn()&gt;</code>.  If you ignore the uniqueness of the function type, then it does (due to the <code>impl Into&lt;T&gt; for T</code> blanket impl) work.  You can either provide an explicit type for the example function so trait resolution isn't required, or use an <code>as</code> cast <code>example(myFn as fn())</code>, which will work, but this is one area where the obvious path with trait resolution doesn't work as I expect.</p>
+<p>In the end, what I have gone with is a series of methods to create rules:</p>
+<pre style="background-color:#2b303b;">
+<span style="color:#b48ead;">match</span><span style="color:#c0c5ce;"> token.kind {
+</span><span style="color:#c0c5ce;">    LeftParen =&gt; None.</span><span style="color:#96b5b4;">prefix</span><span style="color:#c0c5ce;">(grouping),
+</span><span style="color:#c0c5ce;">    RightParen =&gt; None.</span><span style="color:#96b5b4;">into</span><span style="color:#c0c5ce;">(),
+</span><span style="color:#c0c5ce;">    Add =&gt; AddPrec.</span><span style="color:#96b5b4;">prefix</span><span style="color:#c0c5ce;">(unary).</span><span style="color:#96b5b4;">infix</span><span style="color:#c0c5ce;">(binary),
+</span><span style="color:#c0c5ce;">    ...
+</span><span style="color:#c0c5ce;">}
+</span></pre>
+<p>In my opinion this is both clearer and less repetitive than any of the other options I tried.</p>
+<h2>Handling Errors</h2>
+<p>There are multiple different ways of handling syntax errors within a parser that we could choose.</p>
+<p>In Compiling Interpreters, the parsers introduced use error tokens and a <code>synchronise</code> function, which lets the parser recover from some errors which it encounters.  This means that multiple syntax errors can be reported within one file, without having to run the compiler repeatedly to find all the errors, fixing them one at a time.  This, in my opinion doesn't work very well for lua.  There are no specific statement terminators which can easily be used for synchronising, semi colons are only used where it is ambiguous to the parser, rather than at every expression (This is pretty much only when an expression starts with <code>(</code>).</p>
+<p>An alternative error recovery system is used by Rust Analyser, which instead keeps parsing as if an error did not even occur, instead recording the wrong tokens in the tree output by the parser.  This requires the parser to output a CST, which can support trees that contains errors, unlike the AST presented above.  I learnt about this from <a href="https://matklad.github.io/2023/05/21/resilient-ll-parsing-tutorial.html">this blog post</a>, which shows how it works for a small language.  This makes the parser much clearer for an end user, however isn't easy to write.</p>
+<p>The error handling strategy I have chosen is neither of the previous.  Instead we don't handle errors at all.  If the parser encounters an error, it crashes, with a hopefully vaguely relevant message.  This is pretty much the opposite of what is wanted for a language server, IDE, or any other long running process.  However, it is the easiest to implement, to allow us to get on with the rest of the language.</p>
+<p>I would like to come back to the decisions made in this post, so I can improve the parser in the future, but that is very much a "future work" problem, rather than something that needs a solution now.  The code shown in this post is viewable in the source tree <a href="https://github.com/OrangeBacon/typed-lua/tree/e8b9b005cea9e2b362cd1fcc009d8abd571f290c">here</a>.</p>
+<hr />
+<div class="footnote-definition" id="fn-1"><span class="footnote-definition-label">1: </span><p>At least, for prefix operators.  Postfix and infix operators are more complex:</p>
+<pre style="background-color:#2b303b;">
+<span style="color:#b48ead;">type </span><span style="color:#c0c5ce;">PostfixFn = </span><span style="color:#b48ead;">for</span><span style="color:#c0c5ce;">&lt;</span><span style="color:#b48ead;">&#39;a</span><span style="color:#c0c5ce;">&gt; </span><span style="color:#b48ead;">fn</span><span style="color:#c0c5ce;">(&amp;</span><span style="color:#b48ead;">mut </span><span style="color:#c0c5ce;">Parser&lt;</span><span style="color:#b48ead;">&#39;a</span><span style="color:#c0c5ce;">&gt;, ast::Expression&lt;</span><span style="color:#b48ead;">&#39;a</span><span style="color:#c0c5ce;">&gt;) -&gt; ExprResult&lt;</span><span style="color:#b48ead;">&#39;a</span><span style="color:#c0c5ce;">&gt;;
+</span><span style="color:#b48ead;">type </span><span style="color:#c0c5ce;">ExprResult&lt;</span><span style="color:#b48ead;">&#39;a</span><span style="color:#c0c5ce;">&gt; = Result&lt;ast::Expression&lt;</span><span style="color:#b48ead;">&#39;a</span><span style="color:#c0c5ce;">&gt;, ast::Expression&lt;</span><span style="color:#b48ead;">&#39;a</span><span style="color:#c0c5ce;">&gt;&gt;;
+</span></pre>
+</div>
+
+</main>
+
+
+    <footer>
+        <hr>
+        <p>Ella's Writing &copy; 2026 by Ella is licensed under CC BY-SA-NC 4.0</p>
+    </footer>
+</body>
+
+</html>
