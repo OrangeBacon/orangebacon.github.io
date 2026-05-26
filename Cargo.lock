@@ -201,6 +201,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "pikchr"
+version = "0.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "13680336a9060974d823f15053decc0ae5380eebf6f82abf17608523a7d71826"
+dependencies = [
+ "cc",
+ "libc",
+]
+
+[[package]]
 name = "pkg-config"
 version = "0.3.33"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -345,6 +355,7 @@ name = "site"
 version = "0.1.0"
 dependencies = [
  "minijinja",
+ "pikchr",
  "pulldown-cmark",
  "pulldown-cmark-escape",
  "syntect",

@@ -52,7 +52,10 @@ impl FileHandler for MarkdownHandler {
             .collect();
 
         metadata.insert("content".to_string(), html.output.as_str().to_string());
-        metadata.insert("intro".to_string(), html.introduction);
+
+        if !metadata.contains_key("intro") {
+            metadata.insert("intro".to_string(), html.introduction);
+        }
         metadata
     }
 
@@ -355,6 +358,10 @@ where
     fn highlighted_code(&mut self) -> Result<(), Box<dyn Error>> {
         let syntax = self.in_syntax.take().unwrap_or_default();
 
+        if syntax == "pikchr" {
+            return self.diagram();
+        }
+
         let syntax = self
             .syn_syntax
             .find_syntax_by_token(&syntax)
@@ -371,6 +378,16 @@ where
         )?;
 
         self.write(&out)
+    }
+
+    fn diagram(&mut self) -> Result<(), Box<dyn Error>> {
+        let dia = pikchr::Pikchr::render(
+            &self.code_block,
+            None,
+            *pikchr::PikchrFlags::default().use_dark_mode(),
+        )?;
+
+        self.write(&dia)
     }
 }
 
