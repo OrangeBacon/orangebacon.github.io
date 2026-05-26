@@ -205,3 +205,12 @@ ul.posts li a:hover h2 {
         background: var(--sun-img);
     }
 }
+
+svg path {
+    stroke: var(--text-colour) !important
+}
+
+svg text,
+svg polygon {
+    fill: var(--text-colour) !important
+}
