@@ -1,13 +1,17 @@
 {% extends "./templates/main.html" %}
 
+{% block head %}
+<meta name="description" content="{{ intro }}"/>
+{% endblock %}
+
 {% block title %}{{title}}{% endblock %}
 
-{% block body %}
-<header>
-    <h1>{{ title }}</h1>
-    <p>Written by Ella on <time datetime="{{ date }}">{{ date }}</time></p>
-</header>
+{% block header %}
+<h1>{{ title }}</h1>
+<p role="doc-subtitle">Written by Ella on <time datetime="{{ date }}">{{ date }}</time></p>
+{% endblock %}
 
+{% block body %}
 <main>
     {{ content }}
 </main>

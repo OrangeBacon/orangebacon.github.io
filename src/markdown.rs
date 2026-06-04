@@ -195,12 +195,12 @@ where
                 }
                 Event::FootnoteReference(name) => {
                     let len = self.footnote_links.len() + 1;
-                    self.write("<sup class=\"footnote-reference\"><a href=\"#fn-")?;
+                    self.write("<a href='#fn-")?;
                     escape_html(&mut self.output, &name)?;
-                    self.write("\">")?;
+                    self.write("' role='doc-noteref' class='footnote-reference'>")?;
                     let number = *self.footnote_links.entry(name.to_string()).or_insert(len);
                     write!(&mut self.output, "{}", number)?;
-                    self.write("</a></sup>")?;
+                    self.write("</a>")?;
                 }
                 ev => todo!("Impl {ev:?}"),
             }
@@ -213,9 +213,9 @@ where
 
         if !notes.is_empty() {
             if self.end_newline {
-                self.write("<hr />")?;
+                self.write("<hr aria-hidden='true'/>")?;
             } else {
-                self.write("\n<hr />")?;
+                self.write("\n<hr aria-hidden='true'/>")?;
             }
         }
 

@@ -2,11 +2,12 @@
 
 {% block title %}Home{% endblock %}
 
-{% block body %}
-<header>
-    <h1>Posts</h1>
-</header>
+{% block header %}
+<h1>Posts</h1>
+{% endblock %}
 
+{% block body %}
+<main>
 <ul class="posts">
     {% for post in posts | sort(reverse=true) if ".md" in post %}
         <li>
@@ -20,4 +21,5 @@
         </li>
     {% endfor %}
 </ul>
+</main>
 {% endblock %}
