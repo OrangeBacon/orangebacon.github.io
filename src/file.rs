@@ -56,16 +56,31 @@ impl SiteEntries {
     }
 
     /// Add a file to the site.
-    pub fn add(&mut self, path: impl Into<PathBuf>, content: impl Into<String>) {
+    pub fn add(
+        &mut self,
+        path: impl Into<PathBuf>,
+        content: impl Into<Vec<u8>>,
+    ) -> Result<(), Box<dyn Error>> {
         let path = path.into();
+
+        let content = match String::from_utf8(content.into()) {
+            Ok(s) => s,
+            Err(e) => {
+                let output_path = self.output_path(path);
+                self.write_file(&output_path, &e.into_bytes())?;
+                return Ok(());
+            }
+        };
 
         for handler in self.handlers.iter_mut() {
             if handler.matches(&path) {
-                let data = handler.metadata(&path, content.into());
+                let data = handler.metadata(&path, content);
                 self.content.insert(path, data);
-                return;
+                return Ok(());
             }
         }
+
+        Ok(())
     }
 
     /// Process all files in the site and write the output to the filesystem.
@@ -86,23 +101,30 @@ impl SiteEntries {
                 };
 
                 let output_path = handler.output_path(&self.output_path(path));
-
-                if let Some(parent) = output_path.parent() {
-                    fs::create_dir_all(parent)?;
-                }
-
-                let output_file = fs::OpenOptions::new()
-                    .truncate(true)
-                    .create(true)
-                    .write(true)
-                    .open(output_path)?;
-                let mut buf_write = BufWriter::new(output_file);
-
-                buf_write.write_all(data.as_bytes())?;
+                self.write_file(&output_path, &data.into_bytes())?;
 
                 return Ok(());
             }
         }
+
+        Ok(())
+    }
+
+    /// Write a file to the output directory
+    fn write_file(&self, path: &Path, data: &[u8]) -> Result<(), Box<dyn Error>> {
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent)?;
+        }
+
+        let output_file = fs::OpenOptions::new()
+            .truncate(true)
+            .create(true)
+            .write(true)
+            .open(path)?;
+        let mut buf_write = BufWriter::new(output_file);
+
+        buf_write.write_all(data)?;
+        buf_write.flush()?;
 
         Ok(())
     }

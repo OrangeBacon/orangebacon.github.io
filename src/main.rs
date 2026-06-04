@@ -78,8 +78,8 @@ fn process_entry(entries: &mut SiteEntries, entry: &DirEntry) -> Result<(), Box<
             process_entry(entries, &dir)?;
         }
     } else {
-        let content = fs::read_to_string(&path)?;
-        entries.add(path, content);
+        let content = fs::read(&path)?;
+        entries.add(path, content)?;
     }
 
     Ok(())
