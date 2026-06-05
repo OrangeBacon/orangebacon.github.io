@@ -49,7 +49,9 @@ impl SyntaxHighlighter {
         source: &'a str,
     ) -> Result<impl Display + 'a, Box<dyn Error>> {
         let Some(lang) = self.languages.get(lang) else {
-            eprintln!("Unrecognised language: {lang}");
+            if !lang.is_empty() {
+                eprintln!("Unrecognised language: {lang}");
+            }
             return Ok(Highlight {
                 source,
                 iter: vec![HighlightEvent::Source {

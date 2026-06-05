@@ -8,7 +8,7 @@ I thought I would give a few opinions about some of the programming languages I 
 [^1]: Yes the code blocks are here to test the syntax highlighter in the static site generator oops!
 
 # Rust
-```rust
+```rs
 fn main() {
   println!("Hello, World!");
 }
