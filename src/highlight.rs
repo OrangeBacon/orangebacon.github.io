@@ -1,5 +1,6 @@
 use std::{collections::HashMap, error::Error, fmt::Display, sync::LazyLock};
 
+use pulldown_cmark_escape::{FmtWriter, escape_html_body_text};
 use regex::Regex;
 use tree_sitter_highlight::{HighlightConfiguration, HighlightEvent};
 
@@ -28,7 +29,16 @@ impl SyntaxHighlighter {
     pub fn new() -> Result<Self, Box<dyn Error>> {
         Ok(Self {
             highlighter: tree_sitter_highlight::Highlighter::new(),
-            languages: HashMap::from([("rust", Language::rust()?), ("rs", Language::rust()?)]),
+            languages: HashMap::from([
+                ("rs", Language::rust()?),
+                ("sh", Language::bash()?),
+                ("c", Language::c()?),
+                ("c++", Language::cpp()?),
+                ("js", Language::js()?),
+                ("ts", Language::ts()?),
+                ("zig", Language::zig()?),
+                ("c#", Language::c_sharp()?),
+            ]),
         })
     }
 
@@ -76,7 +86,7 @@ impl Display for Highlight<'_> {
                     let lines = s.lines().collect::<Vec<_>>();
                     let len = lines.len();
                     for (idx, line) in lines.into_iter().enumerate() {
-                        write!(f, "{line}")?;
+                        escape_html_body_text(FmtWriter(&mut *f), line)?;
                         if idx >= len - 1 && !s.ends_with('\n') {
                             break;
                         }
@@ -128,6 +138,125 @@ impl Language {
         )?;
 
         let names = get_names(tree_sitter_rust::HIGHLIGHTS_QUERY);
+
+        cfg.configure(&names);
+
+        Ok(Language { cfg, names })
+    }
+
+    /// Get a highlighter for shell scripts
+    fn bash() -> Result<Self, Box<dyn Error>> {
+        let mut cfg = HighlightConfiguration::new(
+            tree_sitter_bash::LANGUAGE.into(),
+            "bash",
+            tree_sitter_bash::HIGHLIGHT_QUERY,
+            "",
+            "",
+        )?;
+
+        let names = get_names(tree_sitter_bash::HIGHLIGHT_QUERY);
+
+        cfg.configure(&names);
+
+        Ok(Language { cfg, names })
+    }
+
+    /// Get a highlighter for c
+    fn c() -> Result<Self, Box<dyn Error>> {
+        let mut cfg = HighlightConfiguration::new(
+            tree_sitter_c::LANGUAGE.into(),
+            "c",
+            tree_sitter_c::HIGHLIGHT_QUERY,
+            "",
+            "",
+        )?;
+
+        let names = get_names(tree_sitter_c::HIGHLIGHT_QUERY);
+
+        cfg.configure(&names);
+
+        Ok(Language { cfg, names })
+    }
+
+    /// Get a highlighter for c++
+    fn cpp() -> Result<Self, Box<dyn Error>> {
+        let mut cfg = HighlightConfiguration::new(
+            tree_sitter_cpp::LANGUAGE.into(),
+            "c++",
+            tree_sitter_cpp::HIGHLIGHT_QUERY,
+            "",
+            "",
+        )?;
+
+        let names = get_names(tree_sitter_cpp::HIGHLIGHT_QUERY);
+
+        cfg.configure(&names);
+
+        Ok(Language { cfg, names })
+    }
+
+    /// Get a highlighter for js
+    fn js() -> Result<Self, Box<dyn Error>> {
+        let mut cfg = HighlightConfiguration::new(
+            tree_sitter_javascript::LANGUAGE.into(),
+            "js",
+            tree_sitter_javascript::HIGHLIGHT_QUERY,
+            tree_sitter_javascript::INJECTIONS_QUERY,
+            tree_sitter_javascript::LOCALS_QUERY,
+        )?;
+
+        let names = get_names(tree_sitter_javascript::HIGHLIGHT_QUERY);
+
+        cfg.configure(&names);
+
+        Ok(Language { cfg, names })
+    }
+
+    /// Get a highlighter for ts
+    fn ts() -> Result<Self, Box<dyn Error>> {
+        let mut cfg = HighlightConfiguration::new(
+            tree_sitter_typescript::LANGUAGE_TYPESCRIPT.into(),
+            "ts",
+            tree_sitter_typescript::HIGHLIGHTS_QUERY,
+            "",
+            tree_sitter_typescript::LOCALS_QUERY,
+        )?;
+
+        let names = get_names(tree_sitter_typescript::HIGHLIGHTS_QUERY);
+
+        cfg.configure(&names);
+
+        Ok(Language { cfg, names })
+    }
+
+    /// Get a highlighter for zig
+    fn zig() -> Result<Self, Box<dyn Error>> {
+        let mut cfg = HighlightConfiguration::new(
+            tree_sitter_zig::LANGUAGE.into(),
+            "zig",
+            tree_sitter_zig::HIGHLIGHTS_QUERY,
+            tree_sitter_zig::INJECTIONS_QUERY,
+            "",
+        )?;
+
+        let names = get_names(tree_sitter_zig::HIGHLIGHTS_QUERY);
+
+        cfg.configure(&names);
+
+        Ok(Language { cfg, names })
+    }
+
+    /// Get a highlighter for c#
+    fn c_sharp() -> Result<Self, Box<dyn Error>> {
+        let mut cfg = HighlightConfiguration::new(
+            tree_sitter_c_sharp::LANGUAGE.into(),
+            "c#",
+            tree_sitter_c_sharp::HIGHLIGHTS_QUERY,
+            "",
+            "",
+        )?;
+
+        let names = get_names(tree_sitter_c_sharp::HIGHLIGHTS_QUERY);
 
         cfg.configure(&names);
 
