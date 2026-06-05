@@ -1,6 +1,7 @@
 :root {
-    --body-margin: 0.5em;
-    --max-width: 600px;
+    --body-margin: 0.5rem;
+    --max-width: 37rem;
+    --side-padding: calc(var(--body-margin) + (100% - var(--max-width)) / 2);
 
     --text-colour: black;
     --reduced-colour: #808080;
@@ -41,7 +42,13 @@
 }
 
 html {
-    font: 1em sans-serif;
+    font-size: 1.1rem;
+    font-family: 'EB Garamond', Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+}
+
+@font-face {
+    font-family: 'EB Garamond';
+    src: url('/assets/EBGaramond-VariableFont_wght.ttf');
 }
 
 body {
@@ -52,20 +59,25 @@ body {
     background: var(--background);
 }
 
-body> :not(nav) {
-    min-width: calc(min(var(--max-width), 100% - 2 * var(--body-margin)));
+body>main,
+body>footer {
     max-width: var(--max-width);
     padding: 0 var(--body-margin) var(--body-margin);
     box-sizing: border-box;
 }
 
+header {
+    margin: 0;
+    padding: 0;
+    max-width: none;
+}
+
 nav {
-    text-align: right;
-    width: 100%;
+    display: flex;
+    justify-content: space-between;
     box-sizing: border-box;
-    padding: 1em;
+    padding: 1em var(--side-padding);
     background: var(--nav-background);
-    padding-bottom: 1.5em;
 }
 
 nav a {
@@ -80,6 +92,11 @@ nav a:hover {
 
 header h1 {
     margin-bottom: 0;
+    padding: 0 var(--side-padding);
+}
+
+header p {
+    padding: 0 var(--side-padding);
 }
 
 header,
@@ -99,6 +116,9 @@ code {
 
 pre {
     padding: 1em;
+    font-size: 1rem;
+    white-space: pre-wrap;
+    word-break: break-all;
 }
 
 hr {
@@ -131,6 +151,7 @@ main :first-child {
 ul.posts {
     list-style-type: none;
     margin: 0;
+    padding: 0;
 }
 
 ul.posts li a {
@@ -161,9 +182,13 @@ ul.posts li a:hover h2 {
     padding-left: 0.5em;
 }
 
-.footnote-reference a {
+.footnote-reference {
     color: var(--text-colour);
     margin-left: 0.25em;
+    vertical-align: top;
+    font-size: smaller;
+    position: relative;
+    top: -0.2em;
 }
 
 .footnote-definition p {
