@@ -7,25 +7,23 @@ use std::{
 
 use pulldown_cmark::{CodeBlockKind, Event, HeadingLevel, Options, Parser, Tag, TagEnd};
 use pulldown_cmark_escape::{escape_href, escape_html, escape_html_body_text};
-use syntect::{highlighting::ThemeSet, html::highlighted_html_for_string, parsing::SyntaxSet};
 
 use crate::{
     file::{FileHandler, SiteEntries},
+    highlight::SyntaxHighlighter,
     template::ENVIRONMENT,
 };
 
 /// File handler for markdown files.  Parses the markdown and puts it into the
 /// named template file.
 pub struct MarkdownHandler {
-    syn_syntax: SyntaxSet,
-    syn_theme: ThemeSet,
+    highlighter: SyntaxHighlighter,
 }
 
 impl MarkdownHandler {
     pub fn new() -> Self {
         Self {
-            syn_syntax: SyntaxSet::load_defaults_newlines(),
-            syn_theme: ThemeSet::load_defaults(),
+            highlighter: SyntaxHighlighter::new().unwrap(),
         }
     }
 }
@@ -111,25 +109,14 @@ struct HtmlWriter<'a, I> {
     /// Contents of the current code block
     code_block: String,
 
-    // Syntax highlighting contexts
-    syn_syntax: &'a SyntaxSet,
-    syn_theme: &'a ThemeSet,
+    highlighter: &'a mut SyntaxHighlighter,
 }
-
-// let syntax = ps.find_syntax_by_extension("rs").unwrap();
-//         let mut h = HighlightLines::new(syntax, &ts.themes["base16-ocean.dark"]);
-//         let s = "pub struct Wow { hi: u64 }\nfn blah() -> u64 {}";
-//         for line in LinesWithEndings::from(s) {
-//             let ranges: Vec<(Style, &str)> = h.highlight_line(line, &ps).unwrap();
-//             let escaped = as_24_bit_terminal_escaped(&ranges[..], true);
-//             print!("{}", escaped);
-//         }
 
 impl<'a, I> HtmlWriter<'a, I>
 where
     I: Iterator<Item = Event<'a>>,
 {
-    fn new(iter: I, markdown: &'a MarkdownHandler) -> Self {
+    fn new(iter: I, markdown: &'a mut MarkdownHandler) -> Self {
         Self {
             iter,
             output: MultiString::default(),
@@ -142,8 +129,7 @@ where
             footnote_defs: HashMap::new(),
             in_syntax: None,
             code_block: String::new(),
-            syn_syntax: &markdown.syn_syntax,
-            syn_theme: &markdown.syn_theme,
+            highlighter: &mut markdown.highlighter,
         }
     }
 
@@ -356,28 +342,17 @@ where
     }
 
     fn highlighted_code(&mut self) -> Result<(), Box<dyn Error>> {
-        let syntax = self.in_syntax.take().unwrap_or_default();
+        let lang = self.in_syntax.take().unwrap_or_default();
 
-        if syntax == "pikchr" {
+        if lang == "pikchr" {
             return self.diagram();
         }
 
-        let syntax = self
-            .syn_syntax
-            .find_syntax_by_token(&syntax)
-            .unwrap_or_else(|| {
-                eprintln!("Unknown Language: '{syntax}'");
-                self.syn_syntax.find_syntax_plain_text()
-            });
+        let out = self.highlighter.highlight(&lang, &self.code_block)?;
+        writeln!(self.output, "{out}")?;
+        self.end_newline = true;
 
-        let out = highlighted_html_for_string(
-            &self.code_block,
-            self.syn_syntax,
-            syntax,
-            &self.syn_theme.themes["base16-ocean.dark"],
-        )?;
-
-        self.write(&out)
+        Ok(())
     }
 
     fn diagram(&mut self) -> Result<(), Box<dyn Error>> {

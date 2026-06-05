@@ -7,6 +7,7 @@ mod markdown;
 mod output_template;
 mod plain_text;
 mod template;
+mod highlight;
 
 use std::{
     error::Error,
