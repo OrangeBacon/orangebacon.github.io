@@ -53,10 +53,10 @@ impl SyntaxHighlighter {
                 eprintln!("Unrecognised language: {lang}");
             }
             return Ok(Highlight {
-                source,
+                source: source.trim(),
                 iter: vec![HighlightEvent::Source {
                     start: 0,
-                    end: source.len(),
+                    end: source.trim().len(),
                 }],
                 names: &[],
             });
