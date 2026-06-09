@@ -109,7 +109,6 @@ main {
 p {
     line-height: 1.5em;
     color: var(--text-colour);
-    padding: 0 0 0 calc(3ch + 0.5em);
 }
 
 code {
@@ -122,6 +121,7 @@ pre {
     font-size: 1rem;
     white-space: pre-wrap;
     word-break: break-all;
+    padding: 0 0 0 calc(3ch + 0.5em);
 }
 
 pre code {
