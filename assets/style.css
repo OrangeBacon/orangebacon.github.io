@@ -1,7 +1,8 @@
 :root {
     --body-margin: 0.5rem;
     --max-width: 37rem;
-    --side-padding: calc(var(--body-margin) + (100% - var(--max-width)) / 2);
+    --side-padding: max(calc(var(--body-margin) + (100% - var(--max-width)) / 2),
+            var(--body-margin));
 
     --text-colour: black;
     --reduced-colour: #808080;
@@ -108,10 +109,12 @@ main {
 p {
     line-height: 1.5em;
     color: var(--text-colour);
+    padding: 0 0 0 calc(3ch + 0.5em);
 }
 
 code {
     color: var(--text-colour);
+    font-size: 0.91rem;
 }
 
 pre {
@@ -119,6 +122,40 @@ pre {
     font-size: 1rem;
     white-space: pre-wrap;
     word-break: break-all;
+}
+
+pre code {
+    display: block;
+    border-left: 1px solid var(--text-colour);
+    padding-left: 0.5em;
+}
+
+code :first-child {
+    counter-reset: line;
+    display: inline-block;
+}
+
+code>span::before {
+    content: counter(line);
+    content: counter(line) / "";
+    counter-increment: line;
+    left: calc(-1em - 1px - 3ch);
+    position: absolute;
+    user-select: none;
+    pointer-events: none;
+    width: 3ch;
+    word-break: keep-all;
+    float: left;
+    text-align: right;
+}
+
+span.line {
+    position: relative;
+}
+
+span.line:empty {
+    height: 1lh;
+    display: inline-block;
 }
 
 hr {
