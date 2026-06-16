@@ -141,7 +141,6 @@ code>span::before {
     counter-increment: line;
     left: calc(-1em - 1px - 3ch);
     position: absolute;
-    user-select: none;
     pointer-events: none;
     width: 3ch;
     word-break: keep-all;
@@ -204,19 +203,16 @@ ul.posts li a:hover h2 {
     text-decoration: underline;
 }
 
-.post-title {
-    display: flex;
-    align-items: baseline;
-}
-
 .post-title h2 {
     margin: 0;
+    display: inline;
 }
 
 .post-title time {
     font-size: 0.8em;
     color: var(--reduced-colour);
     padding-left: 0.5em;
+    white-space: nowrap;
 }
 
 .footnote-reference {
