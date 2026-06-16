@@ -188,6 +188,10 @@ where
                     write!(&mut self.output, "{}", number)?;
                     self.write("</a>")?;
                 }
+                Event::InlineHtml(html) => {
+                    // Assume I haven't tried to XSS myself
+                    self.write(&html)?;
+                }
                 ev => todo!("Impl {ev:?}"),
             }
         }
@@ -301,6 +305,7 @@ where
                 self.code_block = String::new();
                 Ok(())
             }
+            Tag::BlockQuote(_) => self.write("<blockquote>"),
             tag => todo!("impl {tag:?}"),
         }
     }
@@ -337,6 +342,7 @@ where
                 Ok(())
             }
             TagEnd::CodeBlock => self.highlighted_code(),
+            TagEnd::BlockQuote(_) => self.write("</blockquote>"),
             tag => todo!("impl {tag:?}"),
         }
     }
