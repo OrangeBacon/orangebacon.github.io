@@ -85,6 +85,7 @@ nav a {
     color: var(--text-colour);
     font-size: 1.5em;
     text-decoration: none;
+    font-style: normal;
 }
 
 nav a:hover {
@@ -202,6 +203,7 @@ ul.posts {
 ul.posts li a {
     color: var(--text-colour);
     text-decoration: none;
+    font-style: normal;
 }
 
 ul.posts li a p {
