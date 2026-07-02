@@ -3,16 +3,17 @@
 //! pile of code, and more on the content on the site.  (lets see how this goes)
 
 mod file;
+mod highlight;
 mod markdown;
 mod output_template;
 mod plain_text;
 mod template;
-mod highlight;
 
 use std::{
     error::Error,
     fs::{self, DirEntry},
     path::Component,
+    time::Instant,
 };
 
 use crate::{
@@ -23,6 +24,8 @@ use crate::{
 pub const OUTPUT_DIR: &str = "docs";
 
 fn main() -> Result<(), Box<dyn Error>> {
+    let now = Instant::now();
+
     remove_old()?;
 
     // create the new output directory, if already exists ignore the error
@@ -40,6 +43,11 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     entries.process()?;
 
+    println!(
+        "Processed {} entries in {:?}",
+        entries.site_data().len(),
+        now.elapsed()
+    );
     Ok(())
 }
 
