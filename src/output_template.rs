@@ -1,6 +1,7 @@
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
+    sync::LazyLock,
 };
 
 use minijinja::context;
@@ -38,6 +39,7 @@ impl FileHandler for OutputTemplate {
         let output = template
             .render(context! {
                 posts => metadata,
+                date => now(),
                 path,
             })
             .unwrap();
@@ -49,4 +51,15 @@ impl FileHandler for OutputTemplate {
         path.set_extension("");
         path
     }
+}
+
+fn now() -> &'static str {
+    static NOW: LazyLock<String> = LazyLock::new(|| {
+        chrono::Local::now()
+            .date_naive()
+            .format("%a, %d %b %Y 00:00:00 GMT")
+            .to_string()
+    });
+
+    &NOW
 }

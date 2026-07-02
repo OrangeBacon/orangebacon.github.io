@@ -14,7 +14,9 @@ use crate::{
 pub static ENVIRONMENT: LazyLock<Mutex<Environment<'static>>> = LazyLock::new(|| {
     let mut env = Environment::new();
     env.set_auto_escape_callback(|_| minijinja::AutoEscape::None);
-    env.add_function("remove_extension", remove_extension);
+    env.add_filter("remove_extension", remove_extension);
+    env.add_filter("remove_dot_slash", remove_dot_slash);
+    env.add_filter("date_to_rss", date_to_rss);
     Mutex::new(env)
 });
 
@@ -57,4 +59,19 @@ fn remove_extension(path: String) -> String {
     buf.set_extension("");
 
     buf.to_string_lossy().to_string()
+}
+
+/// Helper to remove the leading "./" from a path
+fn remove_dot_slash(path: String) -> String {
+    path.strip_prefix("./")
+        .map(|s| s.to_owned())
+        .unwrap_or(path)
+}
+
+/// Helper to format dates correctly for RSS
+fn date_to_rss(date: String) -> String {
+    chrono::NaiveDate::parse_from_str(&date, "%Y-%m-%d")
+        .unwrap()
+        .format("%a, %d %b %Y 00:00:00 GMT")
+        .to_string()
 }

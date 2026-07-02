@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0"
+  xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>Ella's Writing</title>
+    <link>https://orangebacon.github.io/</link>
+    <description>Ella's blog posts on pretty much anything she's interested in, whether technical, social, or something else!</description>
+    <copyright>Ella's Writing &#169; 2026 by Ella is licensed under CC BY-SA-NC 4.0</copyright>
+    <docs>https://www.rssboard.org/rss-specification</docs>
+    <language>en-GB</language>
+    <lastBuildDate>{{ date }}</lastBuildDate>
+    <dc:creator>Ella Moreton</dc:creator>
+
+    {% for post in posts | sort(reverse=true) if ".md" in post %}
+    <item>
+      <description>{{ posts[post]["intro"] }}</description>
+      <link>https://orangebacon.github.io/{{ post | remove_extension | remove_dot_slash }}</link>
+      <guid isPermaLink="true">https://orangebacon.github.io/{{ post | remove_extension | remove_dot_slash }}</guid>
+      <pubDate>{{ posts[post]["date"] | date_to_rss }}</pubDate>
+      <title>{{ posts[post]["title"] }}</title>
+    </item>
+    {% endfor %}
+  </channel>
+</rss>
