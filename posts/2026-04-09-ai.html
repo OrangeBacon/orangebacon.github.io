@@ -7,8 +7,8 @@
     <meta name="viewport" content="width=device-width" />
     <link rel="stylesheet" href="/assets/style.css">
     <meta name="color-scheme" content="dark light">
-    <script src="/assets/script.js" defer></script>
-    <link rel="alternate" type="application/rss+xml" href="/feed.xml" title="RSS Feed">
+    <link rel="alternate" type="application/rss+xml" href="/rss.xml">
+    <link rel="alternate" type="application/atom+xml" href="/atom.xml">
     
 <meta name="description" content="AI is commonly used in so much recently, including AI art, programming and writing, so I thought it would be a good idea to explain my opinions on AI and the reasoning behind those opinions.  Everything in this has likely been said before, but I want to write down my opinions anyway."/>
 
@@ -19,6 +19,27 @@
         <nav>
             <a href="/">Ella's Writing</a>
             <input type="checkbox" id="light" title="Light/dark mode theme toggle">
+            <script>
+                (() => {
+                    // enhancement to load/store, inlined to avoid flash of wrong-theme
+                    function lightToggle(e) {
+                        let value = e.target.checked;
+                        const media = window.matchMedia("(prefers-color-scheme: dark)");
+                        value ^= media.matches;
+                        window.localStorage.setItem("dark-mode", Boolean(value).toString());
+                    }
+
+                    const el = document.getElementById("light");
+
+                    const media = window.matchMedia("(prefers-color-scheme: dark)");
+                    const stored = window.localStorage.getItem("dark-mode");
+                    if (stored != null) {
+                        el.checked = (stored === "true") ^ media.matches;
+                    }
+
+                    el.addEventListener("change", lightToggle);
+                })();
+            </script>
         </nav>
         
 <h1>Artificial Intelligence</h1>
@@ -79,7 +100,8 @@
 
 
     <footer>
-        <hr aria-hidden="true">
+        <a href="/rss.xml">RSS</a>
+        <a href="/atom.xml">Atom</a>
         <p>Ella's Writing &copy; 2026 by Ella is licensed under CC BY-SA-NC 4.0</p>
     </footer>
 </body>
