@@ -38,6 +38,7 @@ impl SyntaxHighlighter {
                 ("ts", Language::ts()?),
                 ("zig", Language::zig()?),
                 ("c#", Language::c_sharp()?),
+                ("lua", Language::lua()?),
             ]),
         })
     }
@@ -259,6 +260,22 @@ impl Language {
         )?;
 
         let names = get_names(tree_sitter_c_sharp::HIGHLIGHTS_QUERY);
+
+        cfg.configure(&names);
+
+        Ok(Language { cfg, names })
+    }
+
+    fn lua() -> Result<Self, Box<dyn Error>> {
+        let mut cfg = HighlightConfiguration::new(
+            tree_sitter_lua::LANGUAGE.into(),
+            "lua",
+            tree_sitter_lua::HIGHLIGHTS_QUERY,
+            tree_sitter_lua::INJECTIONS_QUERY,
+            tree_sitter_lua::LOCALS_QUERY,
+        )?;
+
+        let names = get_names(tree_sitter_lua::HIGHLIGHTS_QUERY);
 
         cfg.configure(&names);
 
