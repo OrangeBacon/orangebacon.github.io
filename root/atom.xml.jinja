@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>urn:uuid:09715801-0eb3-46ac-90e3-1b955463bf48</id>
+    <title>Ella's Writing</title>
+    <updated>{{ date | date_to_rfc3339 }}</updated>
+    <author>
+        <name>Ella</name>
+        <uri>https://orangebacon.github.io/</uri>
+    </author>
+    <link rel="self" href="https://orangebacon.github.io/atom.xml" />
+    <link rel="alternate" href="https://orangebacon.github.io/" />
+    <rights>Ella's Writing &#169; 2026 by Ella is licensed under CC BY-SA-NC 4.0</rights>
+    <subtitle>Ella's blog posts on pretty much anything she's interested in, whether technical, social, or something else!</subtitle>
+
+    {% for post in posts | sort(reverse=true) if ".md" in post %}<entry>
+        <summary>{{ posts[post]["intro"] | e }}</summary>
+        <id>https://orangebacon.github.io/{{ post | remove_extension | remove_dot_slash }}</id>
+        <updated>{{ posts[post]["date"] | date_to_rfc3339 }}</updated>
+        <title>{{ posts[post]["title"] | e}}</title>
+        <link rel="alternate" href="https://orangebacon.github.io/{{ post | remove_extension | remove_dot_slash }}" />
+    </entry>{% endfor %}
+</feed>

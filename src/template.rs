@@ -17,6 +17,7 @@ pub static ENVIRONMENT: LazyLock<Mutex<Environment<'static>>> = LazyLock::new(||
     env.add_filter("remove_extension", remove_extension);
     env.add_filter("remove_dot_slash", remove_dot_slash);
     env.add_filter("date_to_rss", date_to_rss);
+    env.add_filter("date_to_rfc3339", date_to_rfc3339);
     Mutex::new(env)
 });
 
@@ -73,5 +74,13 @@ fn date_to_rss(date: String) -> String {
     chrono::NaiveDate::parse_from_str(&date, "%Y-%m-%d")
         .unwrap()
         .format("%a, %d %b %Y 00:00:00 GMT")
+        .to_string()
+}
+
+/// Helper to format dates correctly for Atom feeds
+fn date_to_rfc3339(date: String) -> String {
+    chrono::NaiveDate::parse_from_str(&date, "%Y-%m-%d")
+        .unwrap()
+        .format("%Y-%m-%dT00:00:00Z")
         .to_string()
 }

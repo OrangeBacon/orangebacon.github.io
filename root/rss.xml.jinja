@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <rss version="2.0"
-  xmlns:dc="http://purl.org/dc/elements/1.1/">
+  xmlns:dc="http://purl.org/dc/elements/1.1/"
+  xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Ella's Writing</title>
     <link>https://orangebacon.github.io/</link>
@@ -8,16 +9,16 @@
     <copyright>Ella's Writing &#169; 2026 by Ella is licensed under CC BY-SA-NC 4.0</copyright>
     <docs>https://www.rssboard.org/rss-specification</docs>
     <language>en-GB</language>
-    <lastBuildDate>{{ date }}</lastBuildDate>
+    <lastBuildDate>{{ date | date_to_rss }}</lastBuildDate>
     <dc:creator>Ella Moreton</dc:creator>
+    <atom:link href="https://orangebacon.github.io/rss.xml" rel="self" type="application/rss+xml" />
 
-    {% for post in posts | sort(reverse=true) if ".md" in post %}
-    <item>
-      <description>{{ posts[post]["intro"] }}</description>
+    {% for post in posts | sort(reverse=true) if ".md" in post %}<item>
+      <description>{{ posts[post]["intro"] | e }}</description>
       <link>https://orangebacon.github.io/{{ post | remove_extension | remove_dot_slash }}</link>
       <guid isPermaLink="true">https://orangebacon.github.io/{{ post | remove_extension | remove_dot_slash }}</guid>
       <pubDate>{{ posts[post]["date"] | date_to_rss }}</pubDate>
-      <title>{{ posts[post]["title"] }}</title>
+      <title>{{ posts[post]["title"] | e}}</title>
     </item>
     {% endfor %}
   </channel>

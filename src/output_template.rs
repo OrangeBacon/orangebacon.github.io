@@ -57,7 +57,7 @@ fn now() -> &'static str {
     static NOW: LazyLock<String> = LazyLock::new(|| {
         chrono::Local::now()
             .date_naive()
-            .format("%a, %d %b %Y 00:00:00 GMT")
+            .format("%Y-%m-%d")
             .to_string()
     });
 
