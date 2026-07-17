@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+
+<head>
+    <meta charset="UTF-8">
+    <title>why are computers so slow | Ella's Writing</title>
+    <meta name="viewport" content="width=device-width" />
+    <link rel="stylesheet" href="/assets/style.css">
+    <meta name="color-scheme" content="dark light">
+    <link rel="alternate" type="application/rss+xml" href="/rss.xml">
+    <link rel="alternate" type="application/atom+xml" href="/atom.xml">
+    
+<meta name="description" content="can't we make them even a little faster?"/>
+
+</head>
+
+<body>
+    <header>
+        <nav>
+            <a href="/">Ella's Writing</a>
+            <input type="checkbox" id="light" title="Light/dark mode theme toggle">
+            <script>
+                (() => {
+                    // enhancement to load/store, inlined to avoid flash of wrong-theme
+                    function lightToggle(e) {
+                        let value = e.target.checked;
+                        const media = window.matchMedia("(prefers-color-scheme: dark)");
+                        value ^= media.matches;
+                        window.localStorage.setItem("dark-mode", Boolean(value).toString());
+                    }
+
+                    const el = document.getElementById("light");
+
+                    const media = window.matchMedia("(prefers-color-scheme: dark)");
+                    const stored = window.localStorage.getItem("dark-mode");
+                    if (stored != null) {
+                        el.checked = (stored === "true") ^ media.matches;
+                    }
+
+                    el.addEventListener("change", lightToggle);
+                })();
+            </script>
+        </nav>
+        
+<h1>why are computers so slow</h1>
+<p role="doc-subtitle">Written by Ella on <time datetime="2026-07-17">2026-07-17</time></p>
+
+    </header>
+
+    
+<main>
+    <p>the computer i use at work is painfully slow.</p>
+<p>16gb of ram, i5-11320h @ 3.2ghz, 256gb ssd and all it needs to do is run word and emails.  surely thats not hard for that much computer?</p>
+<p>i'm aware that its not the best machine ever, far from it.  however it feels like this should be enough computing power for what i'm using it for.</p>
+<p>microsoft word, emails, and pdfs have existed for ages, i could do the same work on a windows xp machine.  replace one drive with network attached storage, and it would all work with technology thats older than i am</p>
+<p>but no, instead i've got windows 11, with all its <del>amazing</del> awful ai features and corporate end point security that uses more ram than anything i'm actually using the machine for.  and thank you adobe acrobat for opening 12 copies of webview 2 just so i can add comments to a pdf.  12 web views to open a pdf.  the word doc that the pdf was made from is currently open and using 15% of the ram that acrobat does 86mb for word vs 589 for acrobat. why??</p>
+<p>i regularly have this machine take multiple minutes just to rename a folder. wtf?</p>
+<p>has everyone forgotten that efficiency is something that exists?</p>
+
+</main>
+
+
+    <footer>
+        <a href="/rss.xml">RSS</a>
+        <a href="/atom.xml">Atom</a>
+        <p>Ella's Writing &copy; 2026 by Ella is licensed under CC BY-SA-NC 4.0</p>
+    </footer>
+</body>
+
+</html>
