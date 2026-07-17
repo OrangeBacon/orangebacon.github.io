@@ -37,6 +37,7 @@ impl FileHandler for MarkdownHandler {
         let mut options = Options::empty();
         options.insert(Options::ENABLE_YAML_STYLE_METADATA_BLOCKS);
         options.insert(Options::ENABLE_FOOTNOTES);
+        options.insert(Options::ENABLE_STRIKETHROUGH);
         let parser = Parser::new_ext(&content, options);
 
         let mut html = HtmlWriter::new(parser, self);
