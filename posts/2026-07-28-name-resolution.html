@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Name Resolution | Ella's Writing</title>
+    <meta name="viewport" content="width=device-width" />
+    <link rel="stylesheet" href="/assets/style.css">
+    <meta name="color-scheme" content="dark light">
+    <link rel="alternate" type="application/rss+xml" href="/rss.xml">
+    <link rel="alternate" type="application/atom+xml" href="/atom.xml">
+    
+<meta name="description" content="Processing an abstract syntax tree into a more useful format."/>
+
+</head>
+
+<body>
+    <header>
+        <nav>
+            <a href="/">Ella's Writing</a>
+            <input type="checkbox" id="light" title="Light/dark mode theme toggle">
+            <script>
+                (() => {
+                    // enhancement to load/store, inlined to avoid flash of wrong-theme
+                    function lightToggle(e) {
+                        let value = e.target.checked;
+                        const media = window.matchMedia("(prefers-color-scheme: dark)");
+                        value ^= media.matches;
+                        window.localStorage.setItem("dark-mode", Boolean(value).toString());
+                    }
+
+                    const el = document.getElementById("light");
+
+                    const media = window.matchMedia("(prefers-color-scheme: dark)");
+                    const stored = window.localStorage.getItem("dark-mode");
+                    if (stored != null) {
+                        el.checked = (stored === "true") ^ media.matches;
+                    }
+
+                    el.addEventListener("change", lightToggle);
+                })();
+            </script>
+        </nav>
+        
+<h1>Name Resolution</h1>
+<p role="doc-subtitle">Written by Ella on <time datetime="2026-07-28">2026-07-28</time></p>
+
+    </header>
+
+    
+<main>
+    <p>Now we have a syntax tree from the parser (See <a href="https://orangebacon.github.io/posts/2026-05-26-parser">Part 1</a>), we need to do something with it.  The current tree is not the easiest to work with directly for any type checking, and there are many things that could be improved.</p>
+<p>The first, and most immediately noticeable thing that could be changed is the lifetime parameters.  In the AST, we stored tokens directly from the lexer, which referred directly to the source text.  Although this helped reduce memory allocations, it has made the tree harder to store and harder to work with.  I have therefore chosen to allocate strings where required during name resolution, to remove this parameter.</p>
+<h2>String Interning</h2>
+<p>The easiest option for allocating strings is to convert each <code>&amp;str</code> into a <code>String</code> and store that directly in the tree.  This, however requires calling the allocator for each string.  Additionally, strings are 24 bytes (at least on the 64bit platforms I use), which would make the new tree quite big if used everywhere.  Finally, to check if strings are equal is O(n), which can get slow with a lot of strings.</p>
+<p>Instead, I am 'interning' the strings.  I create a list of all strings used in the tree, then whenever I want to include a string in the tree, I put the index into that list.  I'm using <code>u32</code> to store the index, as it is unlikely that anyone will exceed 2^32 strings in a single file.  I then use a hash map to convert from a String into its ID.  Therefore, equality on strings is as simple as checking if the string ids are equal, rather than checking the whole length of the string.</p>
+<p>This uses these fields stored within the name resolution pass:</p>
+<pre><code><span class='line'>map<span class='punctuation delimiter'>:</span> <span class='constructor'>HashMap</span>&lt;<span class='constructor'>String</span><span class='punctuation delimiter'>,</span> <span class='constructor'>StringId</span>&gt;</span>
+<span class='line'>string_table<span class='punctuation delimiter'>:</span> <span class='constructor'>Vec</span>&lt;<span class='constructor'>String</span>&gt;</code></pre>
+<p>There are significantly more efficient string interning methods than this<a href='#fn-1' role='doc-noteref' class='footnote-reference'>1</a>, however they are more complex, this simple method will work for now.</p>
+<h2>Literal resolution</h2>
+<p>Within the lua source code, string literals can contain escape sequences such as <code>\n</code> for representing line breaks, <code>\012</code> to represent the decimal code point numbered <code>012</code> and many more.  These escape sequences make writing string literals easier, however need translating into their actual value before the string can be used.  I chose to implement this translation within the name resolution pass as it allows the strings to be interned as explained above.</p>
+<p>A string literal in lua can contain pretty much any data.  I restrict all source code files to use utf-8, however escape sequences can represent any byte, regardless of whether it is valid utf-8.  I decided to store all strings as <code>Vec&lt;u8&gt;</code>, so that these string literals can be stored correctly.  I store all strings as vecs, even ones directly in the source code that I know are in utf-8.</p>
+<p>Number literals were also converted into their actual numeric representation.  This uses <a href="https://www.lua.org/manual/5.5/manual.html#3.1">lua's rules</a> for whether a number is an integer or a float, and then stores the parsed number in the resolved tree.</p>
+<p>The number representation uses a custom wrapper around floating point numbers, so they can be sorted using <code>f64::total_order</code>, unlike the default implementation in rust, which doesn't implement <code>Ord</code> at all.</p>
+<h2>Name resolution</h2>
+<p>Name resolution is the most complex part of this pass (as you'd expect, given its name).  I had a couple of attempts at getting a good system that achieves what I wanted, all of which had different compromises.</p>
+<h3>Locals</h3>
+<p>Local variables were relatively easy.  I implemented local variable resolution pretty much identically to how it is done in <a href="https://craftinginterpreters.com/local-variables.html">Crafting Interpreters</a>, using a stack of local variables.</p>
+<h3>Globals</h3>
+<p>Global variables, however are pretty different to locals, and lua's globals are particularly complex.  In their simplest form, a global variable access in lua is equivalent to looking up a name within the current environment, i.e. <code>my_global = 5</code> is the same as <code>_ENV["my_global"] = 5</code>.  Lua also has a <code>global</code> statement which is used for defining global variables and attributes on them, e.g. <code>global&lt;const&gt; a</code> declares <code>a</code> to be a constant global variable and <code>global&lt;const&gt; *</code> declares all globals to be constant.</p>
+<h4><code>_ENV</code></h4>
+<p>The environment that a global variable is looked up in is initially defined by the compiler, before the start of any user code.  However, there is nothing stopping someone writing directly to <code>_ENV</code>, or declaring a local variable which shadows <code>_ENV</code>.</p>
+<p>If I define the function:</p>
+<pre><code><span class='line'><span class='keyword'>local</span> <span class='variable'>count</span> <span class='operator'>=</span> <span class='number'>0</span></span>
+<span class='line'><span class='keyword'>local</span> <span class='keyword function'>function</span> <span class='function'>set_env</span><span class='punctuation bracket'>(</span><span class='punctuation bracket'>)</span></span>
+<span class='line'>    <span class='keyword return'>return</span> <span class='function builtin'>setmetatable</span><span class='punctuation bracket'>(</span><span class='constructor'>{</span><span class='field'>print</span> <span class='operator'>=</span> <span class='variable'>print</span><span class='constructor'>}</span><span class='punctuation delimiter'>,</span> <span class='constructor'>{</span></span>
+<span class='line'>        <span class='function'>__index</span> <span class='operator'>=</span> <span class='keyword function'>function</span><span class='punctuation bracket'>(</span><span class='parameter'>table</span><span class='punctuation delimiter'>,</span> <span class='parameter'>key</span><span class='punctuation bracket'>)</span></span>
+<span class='line'>            <span class='variable'>count</span> <span class='operator'>=</span> <span class='variable'>count</span> <span class='operator'>+</span> <span class='number'>1</span></span>
+<span class='line'>            <span class='function builtin'>print</span><span class='punctuation bracket'>(</span><span class='variable'>count</span><span class='punctuation bracket'>)</span></span>
+<span class='line'>            <span class='keyword return'>return</span> <span class='string'>"a"</span></span>
+<span class='line'>        <span class='keyword function'>end</span></span>
+<span class='line'>    <span class='constructor'>}</span><span class='punctuation bracket'>)</span></span>
+<span class='line'><span class='keyword function'>end</span></code></pre>
+<p>Then the below code, prints <code>1 2 3</code>.</p>
+<pre><code><span class='line'><span class='keyword'>local</span> <span class='variable'>_ENV</span> <span class='operator'>=</span> <span class='function call'>set_env</span><span class='punctuation bracket'>(</span><span class='punctuation bracket'>)</span></span>
+<span class='line'><span class='variable'>a</span> <span class='operator'>=</span> <span class='variable'>not_found</span></span>
+<span class='line'><span class='variable'>a</span> <span class='operator'>=</span> <span class='variable'>help</span></span>
+<span class='line'><span class='variable'>b</span> <span class='operator'>=</span> <span class='variable'>owo</span></code></pre>
+<p>If the existing value of <code>_ENV</code> is modified, as in the below code:</p>
+<pre><code><span class='line'><span class='keyword'>local</span> <span class='keyword function'>function</span> <span class='function'>p</span><span class='punctuation bracket'>(</span><span class='punctuation bracket'>)</span> <span class='function builtin'>print</span><span class='punctuation bracket'>(</span><span class='variable'>not_found</span><span class='punctuation bracket'>)</span> <span class='keyword function'>end</span></span>
+<span class='line'><span class='variable'>_ENV</span> <span class='operator'>=</span> <span class='function call'>set_env</span><span class='punctuation bracket'>(</span><span class='punctuation bracket'>)</span></span>
+<span class='line'><span class='function call'>p</span><span class='punctuation bracket'>(</span><span class='punctuation bracket'>)</span> <span class='comment'>-- 1 a</span></code></pre>
+<p>Then the environment changes within the function, as it is changing the value of the environment, even though the memory location which is read within the function doesn't change.</p>
+<p>Alternatively, if a new environment is declared e.g.:</p>
+<pre><code><span class='line'><span class='keyword'>local</span> <span class='keyword function'>function</span> <span class='function'>p</span><span class='punctuation bracket'>(</span><span class='punctuation bracket'>)</span> <span class='function builtin'>print</span><span class='punctuation bracket'>(</span><span class='variable'>not_found</span><span class='punctuation bracket'>)</span> <span class='keyword function'>end</span></span>
+<span class='line'><span class='keyword'>local</span> <span class='variable'>_ENV</span> <span class='operator'>=</span> <span class='function call'>set_env</span><span class='punctuation bracket'>(</span><span class='punctuation bracket'>)</span></span>
+<span class='line'><span class='function call'>p</span><span class='punctuation bracket'>(</span><span class='punctuation bracket'>)</span> <span class='comment'>-- nil</span></code></pre>
+<p>Then then the function hasn't had its environment modified, so is still using the variable for the environment that was in scope when it was declared.  Another way of thinking about this is as if every function captures the <code>_ENV</code> value when it is defined, making all functions closures.</p>
+<p>All this is relatively un-intuitive, but can allow for some pretty powerful patterns, e.g. sandboxing, logging, and weird code only useful to confuse people.  As dynamic as it seems, this is significantly less dynamic than the previous system (<code>setfenv</code>/<code>getfenv</code>), which allowed changing the environment of a function after it had been declared.</p>
+<p>Either way, I intend to support <code>_ENV</code>, and its dynamic nature.</p>
+<h4><code>global</code></h4>
+<p>Global statements were introduced in lua 5.5 to help prevent errors with undefined global variables.  In particular, if you miss-spell the name of a local variable, it can just assign a value to a new global, or read a nil value, all without ever emitting an error to help with the mistake.</p>
+<p>The statement <code>global *</code> declares that all unknown variables are globals.  The statement <code>global&lt;const&gt; *</code> declares that all unknown variables are globals that cannot be assigned to (but can be read from).  By default, every file has an implicit <code>global *</code> at the start, which was the original behaviour, before global statements were introduced.</p>
+<p>More interesting are the global statements that don't end in <code>*</code>, for example <code>global a</code>.  The main effect of this is to declare <code>a</code> to be a global variable, however it additionally invalidates any <code>global *</code> statements.  This means that any globals not introduced in following global statements will produce an error at compile time.  This overriding includes overriding the implicit <code>global *</code> at the start of every file.</p>
+<p>If a global statement has an initialiser e.g. <code>global a = 5</code>, then it checks if the global variable is nil.  If so, it sets the value of the global, otherwise a run-time error is thrown.</p>
+<p>The global statements are all lexically scoped.  This means that you can type one within a block and it will only effect the code within that block.  As an example:</p>
+<pre><code><span class='line'><span class='keyword'>do</span></span>
+<span class='line'>    <span class='keyword'>global</span> <span class='variable'>a</span> <span class='operator'>=</span> <span class='number'>5</span></span>
+<span class='line'>    <span class='function builtin'>print</span><span class='punctuation bracket'>(</span><span class='variable'>a</span><span class='punctuation bracket'>)</span></span>
+<span class='line'><span class='keyword'>end</span></span>
+<span class='line'><span class='function builtin'>print</span><span class='punctuation bracket'>(</span><span class='variable'>b</span><span class='punctuation bracket'>)</span></code></pre>
+<p>Will print <code>5 nil</code>, but not error, as the implicit <code>global *</code> is only overridden within the block, but it is in scope at the <code>print(b)</code> statement.</p>
+<h4>Combination of the 2</h4>
+<p>The 2 global variable systems are both quite different.  Lua by default uses both at the same time, which means that a <code>global</code> statement can contradict what would be possible using <code>_ENV</code>.</p>
+<pre><code><span class='line'><span class='keyword'>global</span><span class='punctuation bracket'>&lt;</span><span class='attribute'>const</span><span class='punctuation bracket'>&gt;</span> <span class='variable'>a</span> <span class='operator'>=</span> <span class='number'>5</span></span>
+<span class='line'><span class='keyword'>local</span> <span class='variable'>_ENV</span> <span class='operator'>=</span> <span class='constructor'>{</span><span class='constructor'>}</span></span>
+<span class='line'><span class='variable'>a</span> <span class='operator'>=</span> <span class='number'>3</span> <span class='comment'>-- cannot assign to a constant</span></code></pre>
+<p>In this program, the <code>&lt;const&gt;</code> attribute is applied to the first environment and once it has been replaced, the attribute still applies, but to a completely different variable.</p>
+<pre><code><span class='line'><span class='keyword'>global</span> <span class='variable'>a</span> <span class='operator'>=</span> <span class='number'>5</span></span>
+<span class='line'><span class='keyword'>global</span> <span class='variable'>print</span></span>
+<span class='line'><span class='function builtin'>print</span><span class='punctuation bracket'>(</span><span class='variable'>b</span><span class='punctuation bracket'>)</span> <span class='comment'>-- error</span></span>
+<span class='line'><span class='keyword'>local</span> <span class='variable'>_ENV</span> <span class='operator'>=</span> <span class='constructor'>{</span> <span class='field'>b</span> <span class='operator'>=</span> <span class='number'>5</span><span class='punctuation delimiter'>,</span> <span class='field'>print</span> <span class='operator'>=</span> <span class='variable'>print</span> <span class='constructor'>}</span></span>
+<span class='line'><span class='function builtin'>print</span><span class='punctuation bracket'>(</span><span class='variable'>b</span><span class='punctuation bracket'>)</span> <span class='comment'>-- still an error because of the lexical scope of `global`</span></code></pre>
+<p>In this one, the first <code>global</code> statement means that un-defined globals will cause an error.  However, by changing the environment, I define <code>b</code>, but it wasn't using a global statement, so it still errors at compile-time, even though the variable does exist at run-time.</p>
+<p>Note that I had to include <code>global print</code> in the file cannot even see the standard library of lua!</p>
+<h4>What was Implemented</h4>
+<p>The simplest solution, in my opinion was to simply ignore a lot of the effects of a <code>global</code> statement.  A global statement has 3 main effects:</p>
+<ul>
+<li>Assign a value to a global variable (if a value was given)</li>
+<li>If that assignment was to a global that isn't <code>nil</code>, emit an error at runtime</li>
+<li>The lexical scoping effects as shown above</li>
+</ul>
+<p>I just decided to keep the first 2 effects and not bother with the 3rd.  This means that <code>global *</code>, <code>global&lt;const&gt; *</code>, <code>global a</code> and <code>global&lt;const&gt; a</code> all have no effect, as no value is assigned.</p>
+<p>This seems to be the simplest solution to the problem, in my opinion.  It doesn't try to mislead people that a <code>global</code> statement actually effects anything about variable resolution.  I should probably add a warning message to remind users of this, however errors are still implemented as <code>panic!</code>, let alone trying to implement warnings.</p>
+<p>It doesn't help anything about making typos in local variable names, but hopefully a type system would help with that, without requiring the lexical scoping and name resolution effects of global statements.</p>
+<h2>Attributes</h2>
+<p>The attribute syntax in lua is (at least to me) very ugly.  I am hoping that I can add new features to the language that prevent having to use attributes (at least with this syntax).</p>
+<p>However, I still think that they should be supported in the parser and name resolver, even if there are better ways to write the same things, so here is how I implemented the 2 default lua attributes:</p>
+<h3><code>&lt;const&gt;</code></h3>
+<p>The <code>&lt;const&gt;</code> attribute was pretty easy to implement entirely within the name resolution pass.  <code>&lt;const&gt;</code> means that the variable cannot be modified, however it is just a syntax marker, rather than actually changing anything about the variable itself.</p>
+<p>When a variable is declared, I check whether it has the <code>&lt;const&gt;</code> attribute, and store that within the variable table.  Then, any time an assignment statement is parsed, I check whether it is assigning directly to a const variable.  This means that an assignment <code>a[5] = 3</code> is always allowed, regardless of whether <code>a</code> is const or not.</p>
+<h3><code>&lt;close&gt;</code></h3>
+<p>In order to implement locals with the <code>&lt;close&gt;</code> attribute, I recorded where the scope of each local variable starts and ends.  For variables introduced as function parameters or loop variables, this is trivial to calculate from the name tree without recording it.  These variables also cannot have attributes applied to them.  However, for variables defined in a <code>local</code> statement, it is less trivial.  I therefore added <code>ScopeStart(VariableID)</code> and <code>ScopeEnd(VariableID)</code> statements to the tree for each local variable.</p>
+<p>The scope ends are not stored in the tree as statements, they are stored as a separate list of variable IDs which need closing, for all times a scope ends.  To show why its a separate list, consider this example:</p>
+<pre><code><span class='line'><span class='keyword'>local</span> <span class='variable'>file</span><span class='punctuation bracket'>&lt;</span><span class='attribute'>close</span><span class='punctuation bracket'>&gt;</span> <span class='operator'>=</span> <span class='variable'>io</span><span class='punctuation delimiter'>.</span><span class='function call'>open</span><span class='punctuation bracket'>(</span><span class='string'>"example.txt"</span><span class='punctuation bracket'>)</span></span>
+<span class='line'><span class='keyword return'>return</span> <span class='variable'>file</span><span class='punctuation delimiter'>:</span><span class='method call'>read</span><span class='punctuation bracket'>(</span><span class='number'>10</span><span class='punctuation bracket'>)</span></code></pre>
+<p>We have the following order of operations:</p>
+<ul>
+<li>open file</li>
+<li>read file and record the return value</li>
+<li><code>file</code> goes out of scope, so call its <code>__close</code> method</li>
+<li>return the previously recorded value</li>
+</ul>
+<p>In order to order the call to <code>__close</code> and the return statement correctly, the list of variables to be closed needs to be recorded separately to the rest of the statements.</p>
+<p>To make this more complex, consider a repeat-loop:</p>
+<pre><code><span class='line'><span class='repeat'>repeat</span></span>
+<span class='line'>	<span class='keyword'>local</span> <span class='variable'>file</span><span class='punctuation bracket'>&lt;</span><span class='attribute'>close</span><span class='punctuation bracket'>&gt;</span> <span class='operator'>=</span> <span class='variable'>io</span><span class='punctuation delimiter'>.</span><span class='function call'>open</span><span class='punctuation bracket'>(</span><span class='string'>"example.txt"</span><span class='punctuation bracket'>)</span></span>
+<span class='line'><span class='repeat'>until</span> <span class='variable'>file</span><span class='punctuation delimiter'>:</span><span class='method call'>read</span><span class='punctuation bracket'>(</span><span class='number'>15</span><span class='punctuation bracket'>)</span></span>
+<span class='line'><span class='keyword return'>return</span></code></pre>
+<p>This (nonsensical) example should have the following order:</p>
+<ul>
+<li>enter loop
+<ul>
+<li>open file</li>
+<li>read the file and record its return value</li>
+<li><code>file</code> goes out of scope, so call its <code>__close</code> method</li>
+<li>if the return value was truthy, continue in the loop</li>
+</ul>
+</li>
+<li>return</li>
+</ul>
+<p>This therefore requires knowledge of the variable scopes within the implementation of the repeat loop, so that the condition is checked at the right time relative to the end of the scope of the variables in the loop.</p>
+<h2>Goto resolution</h2>
+<p>While resolving variables, I also did the name resolution for goto statements.  A goto is able to jump to any label within the current function, regardless of whether it is before or after the goto.</p>
+<p>Within the name tree, each goto and label is stored as an ID.  Each goto statement contains the ID of a label, and each label statement contains its own ID.</p>
+<p>If a goto is found, I try looking up the label in a stack of already found labels. if in there, then a goto statement for that label is emitted.  Otherwise, a new label is added to the stack and the goto statement goes to that undefined label.  At the end of the name resolution pass, it is checked that all labels are defined, and if not an error is emitted.</p>
+<p>Each label stores the nesting level of the function that it was defined in, and when a function definition finishes, the gotos from that function are popped off the top of the stack.</p>
+<p>Similar to goto, lua has a <code>break</code> statement.  This exits the current loop and allows control flow to continue in the statement after the loop.  This is the same as having a label immediately after a loop and using goto within the loop, so I transform all uses of break into this goto and label.  When a loop is being analysed, I add a new label to the stack of defined labels, then any break statement can iterate through the stack to find that label.  The iterator through the stack ensures that the closest loop is found, and checks that the loop is in the same function as the break statement.  When the loop ends, I then emit the target for those gotos and remove the label from the goto stack.  This does however mean every loop counts as 2 statements.</p>
+<p>Goto does have a restriction that it is not allowed to jump over the declaration of a variable.  This hasn't been checked within the name resolution pass, and will need to be verified later in the compiler.  Jumping over variable declarations doesn't matter for globals, as they are equivalent to indexing into a table, as above.  It does, however, matter for local variables, which will be undefined if their declaration is jumped over.  In the original lua implementation (PUC lua), this could result in reading any arbitrary value off the stack, or reading off the end of the stack and causing a segmentation fault.  Due to the analysis we're doing to the code, it would be possible to insert a definition of local variables (i.e. set them to <code>nil</code>) if the declaration is jumped over, however pretty much every time this is done will be a user error, so I think its better to throw a compiler error and not silently accept it.</p>
+<h2>What I learnt while writing this</h2>
+<p>I kept changing the name tree structure throughout writing the resolver.  I'm glad that I didn't try writing a pretty printer for the tree until I'd finished writing the pass as every change to the tree would be significantly more complicated.</p>
+<p>This did have the downside, however, of me having to look at debugging outputs showing <code>Vec&lt;u8&gt;</code> e.g. <code>[95, 69, 78, 86]</code> instead of Strings, e.g. <code>_ENV</code>.</p>
+<p>I likely should implement some kind of testing for the compiler.  Throughout writing the lexer, parser, and now name resolver I've been using small test programs and looking at the output by hand.  I should likely have a system for running test files and comparing their expected outputs.</p>
+<p>I also learnt a lot more about lua than I knew before.  Even if you think you know something, I've found that actually trying to write code to implement that thing is significantly harder and required you to think much deeper than if you just use the feature.</p>
+<p>Additionally I have made this project slightly incompatible with base lua 5.5.  Some of the incompatibilities that I am aware of are:</p>
+<ul>
+<li>As said above, global variable declarations work differently.</li>
+<li>This project is a compiler, I'm not planning on implementing run-time code loading, so no <code>eval</code>-like functions.  This also has effects on how the <code>require</code> function works.</li>
+<li>Lua lets you catch a lot of error messages and look at them as string values, I am not going to try to keep them the same.  (Not least as a type system will move a lot of errors around!)</li>
+<li>Lua checks for out of memory errors, stack overflow errors, and attempts to sandbox code.  I do not, there is no security boundary between user code if using this implementation.  Instead, I would prefer to compile the user code to run in some other sandboxed environment, e.g. wasm.</li>
+</ul>
+<p>I originally wanted to be fully compatible, but have since decided that there really is no point, and I would just be making my life harder.  Therefore my lua is <em>mostly</em> compatible, with the differences probably not mattering to most programs.</p>
+<h2>Result</h2>
+<p>The name resolution pass that we've implemented, is a combination of all of the above transformations into one pass over the AST.  This should be a lot nicer to work with moving forwards, as we know that all of the above transformations were successful.</p>
+<p>There are still several constructs in this resultant tree that can easily be simplified.</p>
+<p>Method calls in lua can be converted into an equivalent function call:</p>
+<pre><code><span class='line'><span class='variable'>a</span><span class='punctuation delimiter'>:</span><span class='method call'>c</span><span class='punctuation bracket'>(</span><span class='punctuation bracket'>)</span></code></pre>
+<p>is equivalent to:</p>
+<pre><code><span class='line'><span class='variable'>a</span><span class='punctuation delimiter'>.</span><span class='function call'>c</span><span class='punctuation bracket'>(</span><span class='variable'>a</span><span class='punctuation bracket'>)</span></code></pre>
+<p>Converting between these 2 reduces the amount of constructs that a type checker has to deal with, so should make things easier for us in the future.</p>
+<p>Making changes like this will be done in the next pass, consuming the tree produced by the name resolution pass, as there is quite a bit more complexity than just the simple transformation above.</p>
+<p>I also intend to write more about the design direction and future plans for the language, at some point, potentially before writing the next pass? (who knows? not me)</p>
+<p>The code for the name resolution we've gone through is in <a href="https://github.com/OrangeBacon/typed-lua/tree/da7f280174e100a3be3be196840658565051828d">the repository</a>.  This includes a few further transformations that are required to fully run the name resolution.  A list of all the transformations made is included at the top of the <code>name_tree.rs</code> file.</p>
+<hr aria-hidden='true'/>
+<div class="footnote-definition" id="fn-1"><span class="footnote-definition-label">1: </span><p>My string interner allocates way more than it should, with lots of separate allocations which could be stored as a single <code>char</code> array.  I also allocate each string twice, once for the hash map and once for the string table, however this could be reduced.  See <a href="https://matklad.github.io/2020/03/22/fast-simple-rust-interner.html">Matklad's Blog post on interning</a> as an example.</p>
+</div>
+
+</main>
+
+
+    <footer>
+        <a href="/rss.xml">RSS</a>
+        <a href="/atom.xml">Atom</a>
+        <p>Ella's Writing &copy; 2026 by Ella is licensed under CC BY-SA-NC 4.0</p>
+    </footer>
+</body>
+
+</html>
