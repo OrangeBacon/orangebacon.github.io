@@ -16,27 +16,16 @@
     <header>
         <nav>
             <a href="/">Ella's Writing</a>
-            <input type="checkbox" id="light" title="Light/dark mode theme toggle">
+            <div class="theme-container">
+                <label for="theme">Theme: </label>
+                <select id="theme" title="Light/dark mode theme toggle">
+                    <option>Automatic</option>
+                    <option>Light</option>
+                    <option>Dark</option>
+                </select>
+            </div>
             <script>
-                (() => {
-                    // enhancement to load/store, inlined to avoid flash of wrong-theme
-                    function lightToggle(e) {
-                        let value = e.target.checked;
-                        const media = window.matchMedia("(prefers-color-scheme: dark)");
-                        value ^= media.matches;
-                        window.localStorage.setItem("dark-mode", Boolean(value).toString());
-                    }
-
-                    const el = document.getElementById("light");
-
-                    const media = window.matchMedia("(prefers-color-scheme: dark)");
-                    const stored = window.localStorage.getItem("dark-mode");
-                    if (stored != null) {
-                        el.checked = (stored === "true") ^ media.matches;
-                    }
-
-                    el.addEventListener("change", lightToggle);
-                })();
+                {% include './assets/theme.jinja.js' %}
             </script>
         </nav>
         {% block header %}{% endblock %}

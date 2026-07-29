@@ -18,7 +18,8 @@ pub struct OutputTemplate;
 
 impl FileHandler for OutputTemplate {
     fn matches(&self, path: &Path) -> bool {
-        path.extension().map(|e| e == "jinja").unwrap_or(false)
+        let first = path.with_extension("");
+        first.extension().map(|e| e == "jinja").unwrap_or(false)
     }
 
     fn metadata(&mut self, path: &Path, content: String) -> HashMap<String, String> {
@@ -47,8 +48,9 @@ impl FileHandler for OutputTemplate {
     }
 
     fn output_path(&self, path: &Path) -> PathBuf {
-        let mut path = path.to_path_buf();
-        path.set_extension("");
+        let ext = path.extension().unwrap_or_default();
+        let mut path = path.with_extension("");
+        path.set_extension(ext);
         path
     }
 }
