@@ -190,7 +190,7 @@ where
                     escape_html(&mut self.output, &name)?;
                     self.write("' role='doc-noteref' class='footnote-reference'>")?;
                     let number = *self.footnote_links.entry(name.to_string()).or_insert(len);
-                    write!(&mut self.output, "[{}]", number)?;
+                    write!(&mut self.output, "<sup>[{}]</sup>", number)?;
                     self.write("</a>")?;
                 }
                 Event::InlineHtml(html) => {

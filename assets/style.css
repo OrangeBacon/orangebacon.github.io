@@ -160,6 +160,10 @@ footer {
 
     nav {
         display: block;
+
+        a+a {
+            margin-inline-start: 1em;
+        }
     }
 }
 
@@ -302,7 +306,7 @@ ul.posts li a:hover h2 {
     white-space: nowrap;
 }
 
-.footnote-reference {
+.footnote-reference sup {
     color: var(--text-colour);
     margin-left: 0.25em;
     vertical-align: top;
