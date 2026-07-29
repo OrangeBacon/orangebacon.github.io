@@ -132,6 +132,11 @@ header h1 {
 
 header p {
     padding: 0 var(--side-padding);
+    margin-bottom: 0;
+}
+
+header p, footer nav {
+    font-size: 0.8em;
 }
 
 footer {
@@ -262,12 +267,6 @@ h6 {
     color: var(--text-colour);
 }
 
-header p,
-footer {
-    font-size: 0.8em;
-    color: var(--text-colour);
-}
-
 ul.posts {
     list-style-type: none;
     margin: 0;
@@ -282,6 +281,7 @@ ul.posts li a {
 
 ul.posts li a p {
     padding-left: 2em;
+    margin-top: 0;
 }
 
 ul.posts li a:hover h2 {
