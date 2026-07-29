@@ -51,6 +51,7 @@ impl FileHandler for MarkdownHandler {
             .collect();
 
         metadata.insert("content".to_string(), html.output.as_str().to_string());
+        metadata.insert("footnotes".to_string(), html.footnotes().unwrap());
 
         if !metadata.contains_key("intro") {
             metadata.insert("intro".to_string(), html.introduction);
@@ -145,6 +146,7 @@ where
         Ok(())
     }
 
+    /// Get the main content of the article
     fn run(&mut self) -> Result<(), Box<dyn Error>> {
         while let Some(event) = self.iter.next() {
             match event {
@@ -184,9 +186,11 @@ where
                     let len = self.footnote_links.len() + 1;
                     self.write("<a href='#fn-")?;
                     escape_html(&mut self.output, &name)?;
+                    self.write("' id='fn-ref-")?;
+                    escape_html(&mut self.output, &name)?;
                     self.write("' role='doc-noteref' class='footnote-reference'>")?;
                     let number = *self.footnote_links.entry(name.to_string()).or_insert(len);
-                    write!(&mut self.output, "{}", number)?;
+                    write!(&mut self.output, "[{}]", number)?;
                     self.write("</a>")?;
                 }
                 Event::InlineHtml(html) => {
@@ -197,36 +201,54 @@ where
             }
         }
 
+        Ok(())
+    }
+
+    /// Get the footnotes for the article
+    fn footnotes(&mut self) -> Result<String, Box<dyn Error>> {
+        self.output.push(String::new());
+
         let mut notes: Vec<_> = std::mem::take(&mut self.footnote_defs)
             .into_iter()
             .collect();
         notes.sort_by_key(|&(n, _)| n);
 
         if !notes.is_empty() {
-            if self.end_newline {
-                self.write("<hr aria-hidden='true'/>")?;
-            } else {
-                self.write("\n<hr aria-hidden='true'/>")?;
+            if !self.end_newline {
+                self.write("\n")?;
             }
+
+            self.write(
+                "
+<hr aria-hidden='true'/>
+<div role='doc-endnotes' aria-labelledby='notes'>
+    <h2 id='notes'>Notes:</h2>
+    <ol>",
+            )?;
         }
 
         for (_, (name, note)) in notes {
-            if self.end_newline {
-                self.write("<div class=\"footnote-definition\" id=\"fn-")?;
-            } else {
-                self.write("\n<div class=\"footnote-definition\" id=\"fn-")?;
+            if !self.end_newline {
+                self.write("\n")?;
             }
+            self.write("<li class='footnote-definition' id='fn-")?;
             escape_html(&mut self.output, &name)?;
-            self.write("\"><span class=\"footnote-definition-label\">")?;
+            self.write("' value='")?;
             let len = self.footnote_links.len() + 1;
             let number = *self.footnote_links.entry(name.clone()).or_insert(len);
-            write!(&mut self.output, "{}: ", number)?;
-            self.write("</span>")?;
+            write!(&mut self.output, "{}'>", number)?;
             self.write(&note)?;
-            self.write("</div>\n")?;
+            self.write("<a role='doc-backlink' href='#fn-ref-")?;
+            escape_html(&mut self.output, &name)?;
+            self.write("'>↩</a>\n")?;
+            self.write("</li>\n")?;
         }
 
-        Ok(())
+        self.write("</ol></div>")?;
+
+        let (_, notes) = self.output.pop();
+
+        Ok(notes)
     }
 
     /// Writes the start of an HTML tag.

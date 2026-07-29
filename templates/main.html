@@ -45,9 +45,12 @@
     {% block body %}{% endblock %}
 
     <footer>
-        <a href="/rss.xml">RSS</a>
-        <a href="/atom.xml">Atom</a>
-        <p>Ella's Writing &copy; 2026 by Ella is licensed under CC BY-SA-NC 4.0</p>
+        {% block footer %}{% endblock %}
+        <nav>
+            <a href="/rss.xml">RSS</a>
+            <a href="/atom.xml">Atom</a>
+            <p role="doc-credit">Ella's Writing &copy; 2026 by Ella is licensed under CC BY-SA-NC 4.0</p>
+        </nav>
     </footer>
 </body>
 

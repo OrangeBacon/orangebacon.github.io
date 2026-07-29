@@ -1,7 +1,7 @@
 {% extends "./templates/main.html" %}
 
 {% block head %}
-<meta name="description" content="{{ intro }}"/>
+<meta name="description" content="{{ intro }}" />
 {% endblock %}
 
 {% block title %}{{title}}{% endblock %}
@@ -16,3 +16,5 @@
     {{ content }}
 </main>
 {% endblock %}
+
+{% block footer %}{{footnotes}}{% endblock %}
