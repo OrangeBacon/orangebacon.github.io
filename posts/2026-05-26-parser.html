@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Writing a Programming Language | Ella's Writing</title>
-    <meta name="viewport" content="width=device-width" />
+    <meta name="viewport" content="width=device-width">
     <link rel="stylesheet" href="/assets/style.css">
     <meta name="color-scheme" content="dark light">
     <link rel="alternate" type="application/rss+xml" href="/rss.xml">
@@ -136,7 +136,7 @@
 <span class='line'>    <span class='constructor'>RightParen</span> =&gt; <span class='punctuation bracket'>(</span><span class='punctuation bracket'>)</span><span class='punctuation delimiter'>,</span></span>
 <span class='line'>    ..<span class='punctuation delimiter'>.</span></span>
 <span class='line'><span class='punctuation bracket'>}</span></code></pre>
-<p>The harder part, to me, is what should be put in each match arm and the types involved.  In order to have a nullable function pointer, the translation to rust is <code>Option&lt;fn()&gt;</code>.  Each of the parse functions to be put in the table will require access to the parser and will need to output the AST for the expression it has parsed.  The return type, therefore, should be <code>ast::Expression&lt;'a&gt;</code> and the functions need to take an argument of <code>&amp;mut Parser&lt;'a&gt;</code>, making the function type <code>fn(&amp;mut Parser&lt;'a&gt;) -&gt; ast::Expression&lt;'a&gt;</code>.  In this signature, the lifetimes need to come from somewhere.  This requires introducing a 'Higher Ranked Trait Bound' (hrtb), which makes the final type<a href='#fn-1' id='fn-ref-1' role='doc-noteref' class='footnote-reference'>[1]</a>:</p>
+<p>The harder part, to me, is what should be put in each match arm and the types involved.  In order to have a nullable function pointer, the translation to rust is <code>Option&lt;fn()&gt;</code>.  Each of the parse functions to be put in the table will require access to the parser and will need to output the AST for the expression it has parsed.  The return type, therefore, should be <code>ast::Expression&lt;'a&gt;</code> and the functions need to take an argument of <code>&amp;mut Parser&lt;'a&gt;</code>, making the function type <code>fn(&amp;mut Parser&lt;'a&gt;) -&gt; ast::Expression&lt;'a&gt;</code>.  In this signature, the lifetimes need to come from somewhere.  This requires introducing a 'Higher Ranked Trait Bound' (hrtb), which makes the final type<a href='#fn-1' id='fn-ref-1' role='doc-noteref' class='footnote-reference'><sup>[1]</sup></a>:</p>
 <pre><code><span class='line'><span class='constructor'>Option</span>&lt;<span class='keyword'>for</span>&lt;<span class='operator'>'</span><span class='label'>a</span>&gt; <span class='keyword'>fn</span><span class='punctuation bracket'>(</span><span class='operator'>&amp;</span><span class='keyword'>mut</span> <span class='type'>Parser</span><span class='punctuation bracket'>&lt;</span><span class='operator'>'</span><span class='label'>a</span><span class='punctuation bracket'>&gt;</span><span class='punctuation bracket'>)</span> -&gt; ast<span class='punctuation delimiter'>::</span><span class='type'>Expression</span><span class='punctuation bracket'>&lt;</span><span class='operator'>'</span><span class='label'>a</span><span class='punctuation bracket'>&gt;</span>&gt;</code></pre>
 <p>Now we have the type signature, we have to consider how to construct values of this type.  The easiest options is to use the rust syntax for constructing structs:</p>
 <pre><code><span class='line'><span class='type'>ParseRule</span> <span class='punctuation bracket'>{</span> <span class='property'>prefix</span><span class='punctuation delimiter'>:</span> <span class='function'>Some</span><span class='punctuation bracket'>(</span>grouping<span class='punctuation bracket'>)</span><span class='punctuation delimiter'>,</span> <span class='property'>infix</span><span class='punctuation delimiter'>:</span> <span class='constructor'>None</span><span class='punctuation delimiter'>,</span> <span class='property'>precedence</span><span class='punctuation delimiter'>:</span> <span class='constructor'>None</span> <span class='punctuation bracket'>}</span><span class='punctuation delimiter'></span></code></pre>
@@ -178,8 +178,7 @@
 </li>
 </ol></div>
         <nav>
-            <a href="/rss.xml">RSS</a>
-            <a href="/atom.xml">Atom</a>
+            <a href="/rss.xml">RSS</a><a href="/atom.xml">Atom</a>
             <p role="doc-credit">Ella's Writing &copy; 2026 by Ella is licensed under CC BY-SA-NC 4.0</p>
         </nav>
     </footer>

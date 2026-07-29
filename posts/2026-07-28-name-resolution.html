@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Name Resolution | Ella's Writing</title>
-    <meta name="viewport" content="width=device-width" />
+    <meta name="viewport" content="width=device-width">
     <link rel="stylesheet" href="/assets/style.css">
     <meta name="color-scheme" content="dark light">
     <link rel="alternate" type="application/rss+xml" href="/rss.xml">
@@ -57,7 +57,7 @@
 <p>This uses these fields stored within the name resolution pass:</p>
 <pre><code><span class='line'>map<span class='punctuation delimiter'>:</span> <span class='constructor'>HashMap</span>&lt;<span class='constructor'>String</span><span class='punctuation delimiter'>,</span> <span class='constructor'>StringId</span>&gt;</span>
 <span class='line'>string_table<span class='punctuation delimiter'>:</span> <span class='constructor'>Vec</span>&lt;<span class='constructor'>String</span>&gt;</code></pre>
-<p>There are significantly more efficient string interning methods than this<a href='#fn-1' id='fn-ref-1' role='doc-noteref' class='footnote-reference'>[1]</a>, however they are more complex, this simple method will work for now.</p>
+<p>There are significantly more efficient string interning methods than this<a href='#fn-1' id='fn-ref-1' role='doc-noteref' class='footnote-reference'><sup>[1]</sup></a>, however they are more complex, this simple method will work for now.</p>
 <h2>Literal resolution</h2>
 <p>Within the lua source code, string literals can contain escape sequences such as <code>\n</code> for representing line breaks, <code>\012</code> to represent the decimal code point numbered <code>012</code> and many more.  These escape sequences make writing string literals easier, however need translating into their actual value before the string can be used.  I chose to implement this translation within the name resolution pass as it allows the strings to be interned as explained above.</p>
 <p>A string literal in lua can contain pretty much any data.  I restrict all source code files to use utf-8, however escape sequences can represent any byte, regardless of whether it is valid utf-8.  I decided to store all strings as <code>Vec&lt;u8&gt;</code>, so that these string literals can be stored correctly.  I store all strings as vecs, even ones directly in the source code that I know are in utf-8.</p>
@@ -217,8 +217,7 @@
 </li>
 </ol></div>
         <nav>
-            <a href="/rss.xml">RSS</a>
-            <a href="/atom.xml">Atom</a>
+            <a href="/rss.xml">RSS</a><a href="/atom.xml">Atom</a>
             <p role="doc-credit">Ella's Writing &copy; 2026 by Ella is licensed under CC BY-SA-NC 4.0</p>
         </nav>
     </footer>
