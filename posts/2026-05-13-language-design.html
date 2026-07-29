@@ -18,27 +18,44 @@
     <header>
         <nav>
             <a href="/">Ella's Writing</a>
-            <input type="checkbox" id="light" title="Light/dark mode theme toggle">
+            <div class="theme-container">
+                <label for="theme">Theme: </label>
+                <select id="theme" title="Light/dark mode theme toggle">
+                    <option value="Automatic">Automatic</option>
+                    <option value="Light">Light</option>
+                    <option value="Dark">Dark</option>
+                </select>
+            </div>
             <script>
                 (() => {
-                    // enhancement to load/store, inlined to avoid flash of wrong-theme
-                    function lightToggle(e) {
-                        let value = e.target.checked;
-                        const media = window.matchMedia("(prefers-color-scheme: dark)");
-                        value ^= media.matches;
-                        window.localStorage.setItem("dark-mode", Boolean(value).toString());
-                    }
+    // enhancement to load/store, inlined to avoid flash of wrong-theme
+    const el = document.getElementById("theme");
+    const meta = document.querySelector("meta[name='color-scheme']");
+    const values = [...el.children].map(el => el.value);
+    const storage_key = "dark-mode";
 
-                    const el = document.getElementById("light");
+    function setTheme() {
+        let value = el.value;
+        window.localStorage.setItem(storage_key, value);
+        if (value.includes("Light")) {
+            meta.setAttribute("content", "light");
+        } else if (value.includes("Dark")) {
+            meta.setAttribute("content", "dark");
+        } else {
+            meta.setAttribute("content", "light dark");
+        }
+    }
 
-                    const media = window.matchMedia("(prefers-color-scheme: dark)");
-                    const stored = window.localStorage.getItem("dark-mode");
-                    if (stored != null) {
-                        el.checked = (stored === "true") ^ media.matches;
-                    }
+    let stored = window.localStorage.getItem(storage_key);
+    if (!stored || !values.includes(stored)) {
+        stored = values[0];
+    }
+    el.value = stored;
 
-                    el.addEventListener("change", lightToggle);
-                })();
+    setTheme();
+
+    el.addEventListener("change", setTheme);
+})();
             </script>
         </nav>
         
