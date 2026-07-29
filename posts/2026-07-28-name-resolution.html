@@ -10,7 +10,7 @@
     <link rel="alternate" type="application/rss+xml" href="/rss.xml">
     <link rel="alternate" type="application/atom+xml" href="/atom.xml">
     
-<meta name="description" content="Processing an abstract syntax tree into a more useful format."/>
+<meta name="description" content="Processing an abstract syntax tree into a more useful format." />
 
 </head>
 
@@ -57,7 +57,7 @@
 <p>This uses these fields stored within the name resolution pass:</p>
 <pre><code><span class='line'>map<span class='punctuation delimiter'>:</span> <span class='constructor'>HashMap</span>&lt;<span class='constructor'>String</span><span class='punctuation delimiter'>,</span> <span class='constructor'>StringId</span>&gt;</span>
 <span class='line'>string_table<span class='punctuation delimiter'>:</span> <span class='constructor'>Vec</span>&lt;<span class='constructor'>String</span>&gt;</code></pre>
-<p>There are significantly more efficient string interning methods than this<a href='#fn-1' role='doc-noteref' class='footnote-reference'>1</a>, however they are more complex, this simple method will work for now.</p>
+<p>There are significantly more efficient string interning methods than this<a href='#fn-1' id='fn-ref-1' role='doc-noteref' class='footnote-reference'>[1]</a>, however they are more complex, this simple method will work for now.</p>
 <h2>Literal resolution</h2>
 <p>Within the lua source code, string literals can contain escape sequences such as <code>\n</code> for representing line breaks, <code>\012</code> to represent the decimal code point numbered <code>012</code> and many more.  These escape sequences make writing string literals easier, however need translating into their actual value before the string can be used.  I chose to implement this translation within the name resolution pass as it allows the strings to be interned as explained above.</p>
 <p>A string literal in lua can contain pretty much any data.  I restrict all source code files to use utf-8, however escape sequences can represent any byte, regardless of whether it is valid utf-8.  I decided to store all strings as <code>Vec&lt;u8&gt;</code>, so that these string literals can be stored correctly.  I store all strings as vecs, even ones directly in the source code that I know are in utf-8.</p>
@@ -202,17 +202,25 @@
 <p>Making changes like this will be done in the next pass, consuming the tree produced by the name resolution pass, as there is quite a bit more complexity than just the simple transformation above.</p>
 <p>I also intend to write more about the design direction and future plans for the language, at some point, potentially before writing the next pass? (who knows? not me)</p>
 <p>The code for the name resolution we've gone through is in <a href="https://github.com/OrangeBacon/typed-lua/tree/da7f280174e100a3be3be196840658565051828d">the repository</a>.  This includes a few further transformations that are required to fully run the name resolution.  A list of all the transformations made is included at the top of the <code>name_tree.rs</code> file.</p>
-<hr aria-hidden='true'/>
-<div class="footnote-definition" id="fn-1"><span class="footnote-definition-label">1: </span><p>My string interner allocates way more than it should, with lots of separate allocations which could be stored as a single <code>char</code> array.  I also allocate each string twice, once for the hash map and once for the string table, however this could be reduced.  See <a href="https://matklad.github.io/2020/03/22/fast-simple-rust-interner.html">Matklad's Blog post on interning</a> as an example.</p>
-</div>
 
 </main>
 
 
     <footer>
-        <a href="/rss.xml">RSS</a>
-        <a href="/atom.xml">Atom</a>
-        <p>Ella's Writing &copy; 2026 by Ella is licensed under CC BY-SA-NC 4.0</p>
+        
+<hr aria-hidden='true'/>
+<div role='doc-endnotes' aria-labelledby='notes'>
+    <h2 id='notes'>Notes:</h2>
+    <ol>
+<li class='footnote-definition' id='fn-1' value='1'><p>My string interner allocates way more than it should, with lots of separate allocations which could be stored as a single <code>char</code> array.  I also allocate each string twice, once for the hash map and once for the string table, however this could be reduced.  See <a href="https://matklad.github.io/2020/03/22/fast-simple-rust-interner.html">Matklad's Blog post on interning</a> as an example.</p>
+<a role='doc-backlink' href='#fn-ref-1'>↩</a>
+</li>
+</ol></div>
+        <nav>
+            <a href="/rss.xml">RSS</a>
+            <a href="/atom.xml">Atom</a>
+            <p role="doc-credit">Ella's Writing &copy; 2026 by Ella is licensed under CC BY-SA-NC 4.0</p>
+        </nav>
     </footer>
 </body>
 

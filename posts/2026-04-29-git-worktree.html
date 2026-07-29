@@ -10,7 +10,7 @@
     <link rel="alternate" type="application/rss+xml" href="/rss.xml">
     <link rel="alternate" type="application/atom+xml" href="/atom.xml">
     
-<meta name="description" content="A quick look at how I publish this website."/>
+<meta name="description" content="A quick look at how I publish this website." />
 
 </head>
 
@@ -51,7 +51,7 @@
 <main>
     <p>A quick look at how I publish this website.</p>
 <h2>Hosting and Publishing</h2>
-<p>This website (at least at the time of writing) is hosted on GitHub pages<a href='#fn-1' role='doc-noteref' class='footnote-reference'>1</a>.</p>
+<p>This website (at least at the time of writing) is hosted on GitHub pages<a href='#fn-1' id='fn-ref-1' role='doc-noteref' class='footnote-reference'>[1]</a>.</p>
 <p>In order to publish on GitHub pages, there are several main methods.
 Use actions to build your website and upload the build output files as your website.
 Use the root of your repository as the website and host the file system directly.  Optionally builds the repository using the Jekyll static site builder (unless a <code>.nojekyll</code> file is included)
@@ -89,17 +89,25 @@ Same as 2, but uses the root of the <code>gh-pages</code> branch.</p>
 <p>In my case, the git UI within vscode can display the build directory as a worktree with a separate commit button, without having to run the above commands manually.</p>
 <h3>Step 4 - Done</h3>
 <p>That's it!  Use <code>git commit</code> from the root of the repository to update the code and from the build directory to deploy.</p>
-<hr aria-hidden='true'/>
-<div class="footnote-definition" id="fn-1"><span class="footnote-definition-label">1: </span><p>There are lots of issues with GitHub that I'm well aware of, not least its awful uptime.  I still use it because it offers a lot of free computer time, in particular with GitHub.dev, which I use as I'm not convinced my old laptop would survive being used as a development server while I'm procrastinating at work by writing here!  Also the free web hosting is nice, I don't feel like putting £10/month on a vps &amp; domain name.  Would be nice at some point though, could maybe even experiment with having dynamic backend code.</p>
-</div>
 
 </main>
 
 
     <footer>
-        <a href="/rss.xml">RSS</a>
-        <a href="/atom.xml">Atom</a>
-        <p>Ella's Writing &copy; 2026 by Ella is licensed under CC BY-SA-NC 4.0</p>
+        
+<hr aria-hidden='true'/>
+<div role='doc-endnotes' aria-labelledby='notes'>
+    <h2 id='notes'>Notes:</h2>
+    <ol>
+<li class='footnote-definition' id='fn-1' value='1'><p>There are lots of issues with GitHub that I'm well aware of, not least its awful uptime.  I still use it because it offers a lot of free computer time, in particular with GitHub.dev, which I use as I'm not convinced my old laptop would survive being used as a development server while I'm procrastinating at work by writing here!  Also the free web hosting is nice, I don't feel like putting £10/month on a vps &amp; domain name.  Would be nice at some point though, could maybe even experiment with having dynamic backend code.</p>
+<a role='doc-backlink' href='#fn-ref-1'>↩</a>
+</li>
+</ol></div>
+        <nav>
+            <a href="/rss.xml">RSS</a>
+            <a href="/atom.xml">Atom</a>
+            <p role="doc-credit">Ella's Writing &copy; 2026 by Ella is licensed under CC BY-SA-NC 4.0</p>
+        </nav>
     </footer>
 </body>
 
