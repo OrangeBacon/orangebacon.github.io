@@ -9,24 +9,12 @@ use pulldown_cmark::{CodeBlockKind, Event, HeadingLevel, Options, Parser, Tag, T
 use pulldown_cmark_escape::{escape_href, escape_html, escape_html_body_text};
 
 use crate::{
-    file::{FileHandler, SiteEntries},
-    highlight::SyntaxHighlighter,
-    template::ENVIRONMENT,
+    file::{FileHandler, SiteEntries}, highlight, template::ENVIRONMENT,
 };
 
 /// File handler for markdown files.  Parses the markdown and puts it into the
 /// named template file.
-pub struct MarkdownHandler {
-    highlighter: SyntaxHighlighter,
-}
-
-impl MarkdownHandler {
-    pub fn new() -> Self {
-        Self {
-            highlighter: SyntaxHighlighter::new().unwrap(),
-        }
-    }
-}
+pub struct MarkdownHandler;
 
 impl FileHandler for MarkdownHandler {
     fn matches(&self, path: &Path) -> bool {
@@ -40,7 +28,7 @@ impl FileHandler for MarkdownHandler {
         options.insert(Options::ENABLE_STRIKETHROUGH);
         let parser = Parser::new_ext(&content, options);
 
-        let mut html = HtmlWriter::new(parser, self);
+        let mut html = HtmlWriter::new(parser);
         html.run().unwrap();
 
         let mut metadata: HashMap<_, _> = html
@@ -77,7 +65,7 @@ impl FileHandler for MarkdownHandler {
 
 /// HTML writer based on the original from pulldown_cmark, however inlined here
 /// to allow modification.
-struct HtmlWriter<'a, I> {
+struct HtmlWriter<I> {
     /// Iterator supplying events.
     iter: I,
 
@@ -110,15 +98,13 @@ struct HtmlWriter<'a, I> {
 
     /// Contents of the current code block
     code_block: String,
-
-    highlighter: &'a mut SyntaxHighlighter,
 }
 
-impl<'a, I> HtmlWriter<'a, I>
+impl<'a, I> HtmlWriter<I>
 where
     I: Iterator<Item = Event<'a>>,
 {
-    fn new(iter: I, markdown: &'a mut MarkdownHandler) -> Self {
+    fn new(iter: I) -> Self {
         Self {
             iter,
             output: MultiString::default(),
@@ -131,7 +117,6 @@ where
             footnote_defs: HashMap::new(),
             in_syntax: None,
             code_block: String::new(),
-            highlighter: &mut markdown.highlighter,
         }
     }
 
@@ -377,7 +362,7 @@ where
             return self.diagram();
         }
 
-        let out = self.highlighter.highlight(&lang, &self.code_block)?;
+        let out = highlight::run(&lang, &self.code_block)?;
         writeln!(self.output, "{out}")?;
         self.end_newline = true;
 

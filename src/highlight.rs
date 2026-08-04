@@ -1,291 +1,186 @@
-use std::{collections::HashMap, error::Error, fmt::Display, sync::LazyLock};
+mod unknown;
+
+use std::{collections::HashMap, error::Error, fmt::Display};
 
 use pulldown_cmark_escape::{FmtWriter, escape_html_body_text};
-use regex::Regex;
-use tree_sitter_highlight::{HighlightConfiguration, HighlightEvent};
 
-/// A single tree sitter language
-struct Language {
-    cfg: HighlightConfiguration,
-    names: Vec<&'static str>,
-}
+/// The description of a single source code snippet
+#[derive(Debug, Clone)]
+struct SourceDescription {
+    /// The language name
+    language: String,
 
-/// Syntax Highlighter
-pub struct SyntaxHighlighter {
-    highlighter: tree_sitter_highlight::Highlighter,
-
-    languages: HashMap<&'static str, Language>,
+    /// Properties `a=5` to be passed to the highlighter
+    properties: HashMap<String, String>,
 }
 
 /// A highlighted source file
-struct Highlight<'a> {
-    source: &'a str,
-    iter: Vec<HighlightEvent>,
-    names: &'a [&'static str],
+struct HighlightedSource<'a> {
+    /// All data to be displayed
+    lines: Vec<HighlightedLine<'a>>,
 }
 
-impl SyntaxHighlighter {
-    /// Create a highlighter with all supported languages
-    pub fn new() -> Result<Self, Box<dyn Error>> {
-        Ok(Self {
-            highlighter: tree_sitter_highlight::Highlighter::new(),
-            languages: HashMap::from([
-                ("rs", Language::rust()?),
-                ("sh", Language::bash()?),
-                ("c", Language::c()?),
-                ("c++", Language::cpp()?),
-                ("js", Language::js()?),
-                ("ts", Language::ts()?),
-                ("zig", Language::zig()?),
-                ("c#", Language::c_sharp()?),
-                ("lua", Language::lua()?),
-            ]),
-        })
-    }
+/// A single line within a highlighted source code file.
+struct HighlightedLine<'a> {
+    /// Highlights that apply to the whole line
+    kind: HighlightedLineKind,
 
-    /// Highlight a source file
-    pub fn highlight<'a>(
-        &'a mut self,
-        lang: &str,
-        source: &'a str,
-    ) -> Result<impl Display + 'a, Box<dyn Error>> {
-        let Some(lang) = self.languages.get(lang) else {
-            if !lang.is_empty() {
-                eprintln!("Unrecognised language: {lang}");
-            }
-            return Ok(Highlight {
-                source: source.trim(),
-                iter: vec![HighlightEvent::Source {
-                    start: 0,
-                    end: source.trim().len(),
-                }],
-                names: &[],
-            });
-        };
-        let iter = self
-            .highlighter
-            .highlight(&lang.cfg, source.trim().as_bytes(), None, |l| {
-                self.languages.get(l).map(|l| &l.cfg)
-            })?
-            .flatten()
-            .collect();
-
-        Ok(Highlight {
-            source,
-            iter,
-            names: &lang.names,
-        })
-    }
+    /// Individual elements of the source line
+    content: Vec<(HighlightScope, &'a str)>,
 }
 
-impl Display for Highlight<'_> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "<pre><code><span class='line'>")?;
-        let mut current = None;
-        for &ev in &self.iter {
-            match ev {
-                HighlightEvent::Source { start, end } => {
-                    let s = &self.source[start..end];
-                    let lines = s.lines().collect::<Vec<_>>();
-                    let len = lines.len();
-                    for (idx, line) in lines.into_iter().enumerate() {
-                        escape_html_body_text(FmtWriter(&mut *f), line)?;
-                        if idx >= len - 1 && !s.ends_with('\n') {
-                            break;
-                        }
-                        if current.is_some() {
-                            write!(f, "</span>")?;
-                        }
-                        write!(f, "</span>\n<span class='line'>")?;
-                        if let Some(curr) = current {
-                            let name: &'static str = self.names[curr];
-                            write!(f, "<span class='")?;
-                            write!(f, "{}", &name.split('.').collect::<Vec<_>>().join(" "))?;
-                            write!(f, "'>")?;
-                        }
-                    }
-                }
-                HighlightEvent::HighlightStart(highlight) => {
-                    write!(f, "<span class='")?;
-                    write!(
-                        f,
-                        "{}",
-                        &self.names[highlight.0]
-                            .split('.')
-                            .collect::<Vec<_>>()
-                            .join(" "),
-                    )?;
-                    write!(f, "'>")?;
-                    current = Some(highlight.0);
-                }
-                HighlightEvent::HighlightEnd => {
-                    write!(f, "</span>")?;
-                    current = None;
-                }
+/// Highlights for a whole line of code
+enum HighlightedLineKind {
+    None,
+    Highlighted,
+    DiffAddition,
+    DiffRemoval,
+}
+
+/// All possible highlighting region kinds, based on those from Highlight.js
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum HighlightScope {
+    /// No specific highlighting scope (whitespace, etc.)
+    None,
+
+    /// keyword in a regular Algol-style language
+    Keyword,
+
+    // built-in or library object (constant, class, function)
+    BuiltIn,
+
+    // data type (in a language with syntactically significant types) (string, int, array, etc.)
+    Type,
+
+    /// special identifier for a built-in value (true, false, null, etc.)
+    Literal,
+
+    /// number, including units and modifiers, if any.
+    Number,
+
+    /// operators: +, -, >>, |, ==
+    Operator,
+
+    /// aux. punctuation that should be subtly highlighted (parentheses, brackets, etc.)
+    Punctuation,
+
+    /// object property obj.prop1.prop2.value
+    Property,
+
+    /// literal regular expression
+    Regexp,
+
+    /// literal string, character
+    String,
+
+    /// an escape character such as \n
+    Escape,
+
+    /// symbolic constant, interned string, goto label
+    Symbol,
+
+    // variables
+    Variable,
+
+    /// variable that is a constant value, ie MAX_FILES
+    Constant,
+
+    // name of a class (interface, trait, module, etc)
+    Class,
+
+    // name of a function
+    Function,
+
+    /// comments
+    Comment,
+
+    /// documentation markup within comments, e.g. @params
+    DocTag,
+
+    /// flags, modifiers, annotations, processing instructions, preprocessor directives, etc
+    Meta,
+
+    // REPL or shell prompts or similar
+    Prompt,
+}
+
+pub fn run<'a>(language: &str, source: &'a str) -> Result<impl Display + 'a, Box<dyn Error>> {
+    let desc = SourceDescription::new(language);
+
+    let source = match desc.language.as_str() {
+        // "rs" | "rust" => todo!(),
+        // "lua" => todo!(),
+        _ => unknown::highlight(source),
+    };
+
+    // diff
+    // highlight
+
+    Ok(source)
+}
+
+impl SourceDescription {
+    fn new(language: &str) -> Self {
+        let parts: Vec<_> = language.split(' ').collect();
+
+        let mut properties = HashMap::new();
+        for &part in &parts[1..] {
+            if let Some((l, r)) = part.split_once('=') {
+                properties.insert(l.to_string(), r.to_string());
+            } else {
+                properties.insert(part.to_string(), String::new());
             }
         }
 
-        write!(f, "</code></pre>")
+        Self {
+            language: parts[0].to_string(),
+            properties,
+        }
     }
 }
 
-impl Language {
-    /// Get a highlighter for the rust language
-    fn rust() -> Result<Self, Box<dyn Error>> {
-        let mut cfg = HighlightConfiguration::new(
-            tree_sitter_rust::LANGUAGE.into(),
-            "rust",
-            tree_sitter_rust::HIGHLIGHTS_QUERY,
-            tree_sitter_rust::INJECTIONS_QUERY,
-            "",
-        )?;
+impl Display for HighlightedSource<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "<pre class='highlighted'><code><ol>")?;
 
-        let names = get_names(tree_sitter_rust::HIGHLIGHTS_QUERY);
+        for (idx, line) in self.lines.iter().enumerate() {
+            if idx != 0 {
+                writeln!(f)?;
+            }
+            line.fmt(f)?;
+        }
 
-        cfg.configure(&names);
-
-        Ok(Language { cfg, names })
-    }
-
-    /// Get a highlighter for shell scripts
-    fn bash() -> Result<Self, Box<dyn Error>> {
-        let mut cfg = HighlightConfiguration::new(
-            tree_sitter_bash::LANGUAGE.into(),
-            "bash",
-            tree_sitter_bash::HIGHLIGHT_QUERY,
-            "",
-            "",
-        )?;
-
-        let names = get_names(tree_sitter_bash::HIGHLIGHT_QUERY);
-
-        cfg.configure(&names);
-
-        Ok(Language { cfg, names })
-    }
-
-    /// Get a highlighter for c
-    fn c() -> Result<Self, Box<dyn Error>> {
-        let mut cfg = HighlightConfiguration::new(
-            tree_sitter_c::LANGUAGE.into(),
-            "c",
-            tree_sitter_c::HIGHLIGHT_QUERY,
-            "",
-            "",
-        )?;
-
-        let names = get_names(tree_sitter_c::HIGHLIGHT_QUERY);
-
-        cfg.configure(&names);
-
-        Ok(Language { cfg, names })
-    }
-
-    /// Get a highlighter for c++
-    fn cpp() -> Result<Self, Box<dyn Error>> {
-        let mut cfg = HighlightConfiguration::new(
-            tree_sitter_cpp::LANGUAGE.into(),
-            "c++",
-            tree_sitter_cpp::HIGHLIGHT_QUERY,
-            "",
-            "",
-        )?;
-
-        let names = get_names(tree_sitter_cpp::HIGHLIGHT_QUERY);
-
-        cfg.configure(&names);
-
-        Ok(Language { cfg, names })
-    }
-
-    /// Get a highlighter for js
-    fn js() -> Result<Self, Box<dyn Error>> {
-        let mut cfg = HighlightConfiguration::new(
-            tree_sitter_javascript::LANGUAGE.into(),
-            "js",
-            tree_sitter_javascript::HIGHLIGHT_QUERY,
-            tree_sitter_javascript::INJECTIONS_QUERY,
-            tree_sitter_javascript::LOCALS_QUERY,
-        )?;
-
-        let names = get_names(tree_sitter_javascript::HIGHLIGHT_QUERY);
-
-        cfg.configure(&names);
-
-        Ok(Language { cfg, names })
-    }
-
-    /// Get a highlighter for ts
-    fn ts() -> Result<Self, Box<dyn Error>> {
-        let mut cfg = HighlightConfiguration::new(
-            tree_sitter_typescript::LANGUAGE_TYPESCRIPT.into(),
-            "ts",
-            tree_sitter_typescript::HIGHLIGHTS_QUERY,
-            "",
-            tree_sitter_typescript::LOCALS_QUERY,
-        )?;
-
-        let names = get_names(tree_sitter_typescript::HIGHLIGHTS_QUERY);
-
-        cfg.configure(&names);
-
-        Ok(Language { cfg, names })
-    }
-
-    /// Get a highlighter for zig
-    fn zig() -> Result<Self, Box<dyn Error>> {
-        let mut cfg = HighlightConfiguration::new(
-            tree_sitter_zig::LANGUAGE.into(),
-            "zig",
-            tree_sitter_zig::HIGHLIGHTS_QUERY,
-            tree_sitter_zig::INJECTIONS_QUERY,
-            "",
-        )?;
-
-        let names = get_names(tree_sitter_zig::HIGHLIGHTS_QUERY);
-
-        cfg.configure(&names);
-
-        Ok(Language { cfg, names })
-    }
-
-    /// Get a highlighter for c#
-    fn c_sharp() -> Result<Self, Box<dyn Error>> {
-        let mut cfg = HighlightConfiguration::new(
-            tree_sitter_c_sharp::LANGUAGE.into(),
-            "c#",
-            tree_sitter_c_sharp::HIGHLIGHTS_QUERY,
-            "",
-            "",
-        )?;
-
-        let names = get_names(tree_sitter_c_sharp::HIGHLIGHTS_QUERY);
-
-        cfg.configure(&names);
-
-        Ok(Language { cfg, names })
-    }
-
-    fn lua() -> Result<Self, Box<dyn Error>> {
-        let mut cfg = HighlightConfiguration::new(
-            tree_sitter_lua::LANGUAGE.into(),
-            "lua",
-            tree_sitter_lua::HIGHLIGHTS_QUERY,
-            tree_sitter_lua::INJECTIONS_QUERY,
-            tree_sitter_lua::LOCALS_QUERY,
-        )?;
-
-        let names = get_names(tree_sitter_lua::HIGHLIGHTS_QUERY);
-
-        cfg.configure(&names);
-
-        Ok(Language { cfg, names })
+        write!(f, "</ol></code></pre>")
     }
 }
 
-/// Get the syntax highlighting scopes from a language's highlights query
-fn get_names(query: &str) -> Vec<&str> {
-    static RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"@[\w\.]+").unwrap());
+impl Display for HighlightedLine<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "<li")?;
 
-    RE.find_iter(query).map(|m| &m.as_str()[1..]).collect()
+        match self.kind {
+            HighlightedLineKind::None => write!(f, ">")?,
+            HighlightedLineKind::Highlighted => write!(f, " class='line-highlight'>")?,
+            HighlightedLineKind::DiffAddition => write!(f, " class='line-add'>")?,
+            HighlightedLineKind::DiffRemoval => write!(f, " class='line-remove'>")?,
+        }
+
+        // ensure there is something to make the line heights in css work right
+        if self.content.is_empty() {
+            write!(f, " ")?;
+        }
+
+        for &(scope, text) in &self.content {
+            if scope == HighlightScope::None {
+                escape_html_body_text(FmtWriter(&mut *f), text)?;
+            } else {
+                let class = format!("{:?}", scope).to_lowercase();
+                write!(f, "<span class='{class}'>")?;
+                escape_html_body_text(FmtWriter(&mut *f), text)?;
+                write!(f, "</span>")?;
+            }
+        }
+
+        write!(f, "</li>")
+    }
 }
