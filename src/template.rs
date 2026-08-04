@@ -4,6 +4,7 @@ use std::{
     sync::{LazyLock, Mutex},
 };
 
+use jiff::civil::Date;
 use minijinja::Environment;
 
 use crate::{
@@ -71,16 +72,16 @@ fn remove_dot_slash(path: String) -> String {
 
 /// Helper to format dates correctly for RSS
 fn date_to_rss(date: String) -> String {
-    chrono::NaiveDate::parse_from_str(&date, "%Y-%m-%d")
+    Date::strptime("%Y-%m-%d", date)
         .unwrap()
-        .format("%a, %d %b %Y 00:00:00 GMT")
+        .strftime("%a, %d %b %Y 00:00:00 GMT")
         .to_string()
 }
 
 /// Helper to format dates correctly for Atom feeds
 fn date_to_rfc3339(date: String) -> String {
-    chrono::NaiveDate::parse_from_str(&date, "%Y-%m-%d")
+    Date::strptime("%Y-%m-%d", date)
         .unwrap()
-        .format("%Y-%m-%dT00:00:00Z")
+        .strftime("%Y-%m-%dT00:00:00Z")
         .to_string()
 }

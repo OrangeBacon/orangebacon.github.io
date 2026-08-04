@@ -8,4 +8,7 @@ minijinja = "2.18.0"
 pulldown-cmark = "0.13.3"
 pulldown-cmark-escape = "0.11.0"
 pikchr = "0.1.4"
-chrono = { version = "0.4.45", default-features = false , features = ["alloc", "std", "clock"]}
+jiff = { version = "0.2.35", default-features = false, features = [
+    "alloc",
+    "std",
+] }

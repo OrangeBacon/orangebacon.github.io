@@ -4,6 +4,7 @@ use std::{
     sync::LazyLock,
 };
 
+use jiff::Zoned;
 use minijinja::context;
 
 use crate::{
@@ -56,12 +57,8 @@ impl FileHandler for OutputTemplate {
 }
 
 fn now() -> &'static str {
-    static NOW: LazyLock<String> = LazyLock::new(|| {
-        chrono::Local::now()
-            .date_naive()
-            .format("%Y-%m-%d")
-            .to_string()
-    });
+    static NOW: LazyLock<String> =
+        LazyLock::new(|| Zoned::now().date().strftime("%Y-%m-%d").to_string());
 
     &NOW
 }
