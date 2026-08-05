@@ -6,27 +6,27 @@ use pulldown_cmark_escape::{FmtWriter, escape_html_body_text};
 
 /// The description of a single source code snippet
 #[derive(Debug, Clone)]
-struct SourceDescription {
+struct SourceDescription<'a> {
     /// The language name
     language: String,
 
     /// Properties `a=5` to be passed to the highlighter
-    properties: HashMap<String, String>,
+    properties: HashMap<&'a str, &'a str>,
 }
 
 /// A highlighted source file
-struct HighlightedSource<'a> {
+struct HighlightedSource {
     /// All data to be displayed
-    lines: Vec<HighlightedLine<'a>>,
+    lines: Vec<HighlightedLine>,
 }
 
 /// A single line within a highlighted source code file.
-struct HighlightedLine<'a> {
+struct HighlightedLine {
     /// Highlights that apply to the whole line
     kind: HighlightedLineKind,
 
     /// Individual elements of the source line
-    content: Vec<(HighlightScope, &'a str)>,
+    content: Vec<(HighlightScope, String)>,
 }
 
 /// Highlights for a whole line of code
@@ -104,31 +104,62 @@ enum HighlightScope {
     Prompt,
 }
 
-pub fn run<'a>(language: &str, source: &'a str) -> Result<impl Display + 'a, Box<dyn Error>> {
+/// Run a syntax highlighter over the provided source code
+pub fn run(language: &str, source: &str) -> Result<impl Display, Box<dyn Error>> {
     let desc = SourceDescription::new(language);
+    let mut source: Vec<_> = source.lines().collect();
 
-    let source = match desc.language.as_str() {
+    let mut hide_lines = vec![];
+    if let Some(hide_prefix) = desc.properties.get("hide") {
+        for (idx, line) in source.iter_mut().enumerate() {
+            if let Some(stripped) = line.strip_prefix(hide_prefix) {
+                hide_lines.push(idx);
+                *line = stripped;
+            }
+        }
+    }
+
+    let source = source.join("\n");
+    let mut source = match desc.language.as_str() {
         // "rs" | "rust" => todo!(),
         // "lua" => todo!(),
-        _ => unknown::highlight(source),
+        _ => unknown::highlight(&source),
     };
 
-    // diff
-    // highlight
+    let highlights: Vec<usize> = desc
+        .properties
+        .get("highlight")
+        .copied()
+        .unwrap_or_default()
+        .split(",")
+        .flat_map(|n| n.parse())
+        .collect();
+    for (idx, line) in source.lines.iter_mut().enumerate() {
+        if highlights.contains(&(idx + 1)) {
+            line.kind = HighlightedLineKind::Highlighted;
+        }
+    }
+
+    let mut idx = 0;
+    source.lines.retain(|_| {
+        let ret = hide_lines.contains(&idx);
+        idx += 1;
+        !ret
+    });
 
     Ok(source)
 }
 
-impl SourceDescription {
-    fn new(language: &str) -> Self {
+impl<'a> SourceDescription<'a> {
+    fn new(language: &'a str) -> Self {
         let parts: Vec<_> = language.split(' ').collect();
 
         let mut properties = HashMap::new();
         for &part in &parts[1..] {
             if let Some((l, r)) = part.split_once('=') {
-                properties.insert(l.to_string(), r.to_string());
+                properties.insert(l, r);
             } else {
-                properties.insert(part.to_string(), String::new());
+                properties.insert(part, "");
             }
         }
 
@@ -139,7 +170,7 @@ impl SourceDescription {
     }
 }
 
-impl Display for HighlightedSource<'_> {
+impl Display for HighlightedSource {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "<pre class='highlighted'><code><ol>")?;
 
@@ -154,7 +185,7 @@ impl Display for HighlightedSource<'_> {
     }
 }
 
-impl Display for HighlightedLine<'_> {
+impl Display for HighlightedLine {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "<li")?;
 
@@ -170,8 +201,8 @@ impl Display for HighlightedLine<'_> {
             write!(f, " ")?;
         }
 
-        for &(scope, text) in &self.content {
-            if scope == HighlightScope::None {
+        for (scope, text) in &self.content {
+            if *scope == HighlightScope::None {
                 escape_html_body_text(FmtWriter(&mut *f), text)?;
             } else {
                 let class = format!("{:?}", scope).to_lowercase();
