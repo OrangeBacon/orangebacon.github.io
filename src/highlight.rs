@@ -21,6 +21,7 @@ struct HighlightedSource {
 }
 
 /// A single line within a highlighted source code file.
+#[derive(Default)]
 struct HighlightedLine {
     /// Highlights that apply to the whole line
     kind: HighlightedLineKind,
@@ -30,7 +31,9 @@ struct HighlightedLine {
 }
 
 /// Highlights for a whole line of code
+#[derive(Default)]
 enum HighlightedLineKind {
+    #[default]
     None,
     Highlighted,
     DiffAddition,
@@ -100,8 +103,11 @@ enum HighlightScope {
     /// flags, modifiers, annotations, processing instructions, preprocessor directives, etc
     Meta,
 
-    // REPL or shell prompts or similar
+    /// REPL prompts, shell prompts, or similar
     Prompt,
+
+    /// Diff markers, or similar
+    Diff,
 }
 
 /// Run a syntax highlighter over the provided source code
@@ -119,11 +125,9 @@ pub fn run(language: &str, source: &str) -> Result<impl Display, Box<dyn Error>>
         }
     }
 
-    let source = source.join("\n");
-    let mut source = match desc.language.as_str() {
-        // "rs" | "rust" => todo!(),
-        // "lua" => todo!(),
-        _ => unknown::highlight(&source),
+    let mut source = match desc.properties.get("diff") {
+        Some(_) => process_diff(&desc, &source),
+        None => raw_highlight(&desc, &source),
     };
 
     let highlights: Vec<usize> = desc
@@ -148,6 +152,102 @@ pub fn run(language: &str, source: &str) -> Result<impl Display, Box<dyn Error>>
     });
 
     Ok(source)
+}
+
+/// Do the highlighting for a diff formatted input
+fn process_diff(desc: &SourceDescription, source: &[&str]) -> HighlightedSource {
+    /// Where each output line should come from
+    enum LineSource<'a> {
+        /// Diff original source
+        A(usize),
+        B(usize),
+        Default(usize),
+        Annotation {
+            start: &'a str,
+            end: &'a str,
+        },
+    }
+
+    let mut a = vec![];
+    let mut b = vec![];
+    let mut annotations = vec![];
+    let mut combine = vec![];
+
+    for line in source {
+        if let Some(annotation) = line.strip_prefix("+++") {
+            combine.push(LineSource::Annotation {
+                start: "+++",
+                end: annotation,
+            });
+            annotations.push(line);
+        } else if let Some(annotation) = line.strip_prefix("---") {
+            combine.push(LineSource::Annotation {
+                start: "---",
+                end: annotation,
+            });
+            annotations.push(line);
+        } else if let Some(annotation) = line.strip_prefix("@@") {
+            let end = annotation
+                .split_once("@@")
+                .map(|(_, s)| s)
+                .unwrap_or_default();
+            let start = line.strip_suffix(end).unwrap_or(line);
+            combine.push(LineSource::Annotation { start, end });
+            annotations.push(line);
+        } else if let Some(line) = line.strip_prefix("+") {
+            combine.push(LineSource::B(b.len()));
+            b.push(line);
+        } else if let Some(line) = line.strip_prefix("-") {
+            combine.push(LineSource::A(a.len()));
+            a.push(line);
+        } else {
+            combine.push(LineSource::Default(b.len()));
+            a.push(line);
+            b.push(line);
+        }
+    }
+
+    let mut a = raw_highlight(desc, &a);
+    let mut b = raw_highlight(desc, &b);
+
+    let lines = combine
+        .into_iter()
+        .map(|l| match l {
+            LineSource::A(idx) => {
+                let mut line = std::mem::take(&mut a.lines[idx]);
+                line.kind = HighlightedLineKind::DiffRemoval;
+                line
+            }
+            LineSource::B(idx) => {
+                let mut line = std::mem::take(&mut b.lines[idx]);
+                line.kind = HighlightedLineKind::DiffAddition;
+                line
+            }
+            LineSource::Default(idx) => std::mem::take(&mut a.lines[idx]),
+            LineSource::Annotation { start, end } => {
+                let lines = [(HighlightScope::Diff, start), (HighlightScope::None, end)]
+                    .into_iter()
+                    .filter(|(_, s)| s.is_empty())
+                    .map(|(a, b)| (a, b.to_string()));
+                HighlightedLine {
+                    kind: HighlightedLineKind::None,
+                    content: lines.collect(),
+                }
+            }
+        })
+        .collect();
+
+    HighlightedSource { lines }
+}
+
+/// Highlight source code without processing the global properties
+fn raw_highlight(desc: &SourceDescription, source: &[&str]) -> HighlightedSource {
+    let source = source.join("\n");
+    match desc.language.as_str() {
+        // "rs" | "rust" => todo!(),
+        // "lua" => todo!(),
+        _ => unknown::highlight(&source),
+    }
 }
 
 impl<'a> SourceDescription<'a> {
