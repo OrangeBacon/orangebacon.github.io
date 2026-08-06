@@ -132,7 +132,36 @@ pub fn run(language: &str, source: &str) -> Result<impl Display, Box<dyn Error>>
         !ret
     });
 
-    Ok(source)
+    // clean up the output so the html produced is smaller
+    let mut cleaned = HighlightedSource { lines: vec![] };
+    for line in source.lines {
+        let mut new_line: Vec<(HighlightScope, String)> = vec![];
+
+        for (mut scope, text) in line.content {
+            if text.is_empty() {
+                continue;
+            }
+
+            if text.chars().all(|c| c.is_whitespace()) {
+                scope = HighlightScope::None;
+            }
+
+            if let Some((last_scope, last_text)) = new_line.last_mut()
+                && scope == *last_scope
+            {
+                last_text.push_str(&text);
+            } else {
+                new_line.push((scope, text));
+            }
+        }
+
+        cleaned.lines.push(HighlightedLine {
+            kind: line.kind,
+            content: new_line,
+        });
+    }
+
+    Ok(cleaned)
 }
 
 /// Do the highlighting for a diff formatted input
@@ -255,10 +284,7 @@ impl Display for HighlightedSource {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "<pre class='highlighted'><code><ol>")?;
 
-        for (idx, line) in self.lines.iter().enumerate() {
-            if idx != 0 {
-                writeln!(f)?;
-            }
+        for line in &self.lines {
             line.fmt(f)?;
         }
 
