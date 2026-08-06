@@ -1,10 +1,23 @@
 --text-colour: black;
 --background: #E6D1F2;
 --nav-background: #b19cd8;
+
 --code-background: #FFFFFF;
 --code-keyword: #0000FF;
---code-comment: #008000;
---code-label: #0000FF;
---code-constructor: #0070C1;
+--code-type: #0000FF;
+--code-literal: #0000FF;
+--code-number: #098658;
+--code-punctuation: var(--text-color);
+--code-operator: var(--text-color);
 --code-string: #A31515;
---code-type: #795E26;
+--code-symbol: #0000FF;
+--code-variable: #001080;
+--code-constant: #001080;
+--code-class: #267F99;
+--code-comment: #008000;
+--code-macro: #0000FF;
+--code-diff: #8250df;
+
+--line-add
+--line-remove: #ffebe9;
+--line-highlight: #dafbe1;

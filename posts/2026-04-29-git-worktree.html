@@ -84,25 +84,19 @@ Same as 2, but uses the root of the <code>gh-pages</code> branch.</p>
 <h3>Step 0:</h3>
 <p>Ensure everything is committed already incase anything gets removed or done wrong.</p>
 <h3>Step 1 - Create a new branch for the build files:</h3>
-<pre><code><span class='line'><span class='function'>git</span> checkout <span class='constant'>--orphan</span> gh-pages</span>
-<span class='line'><span class='function'>git</span> rm <span class='constant'>-rf</span> .</span>
-<span class='line'><span class='function'>git</span> commit <span class='constant'>--allow-empty</span> <span class='constant'>-m</span> <span class='string'>"Initial deploy"</span></span>
-<span class='line'><span class='function'>git</span> push <span class='constant'>--set-upstream</span> origin gh-pages</code></pre>
+<pre class='highlighted'><code><ol><li>git checkout --orphan gh-pages</li><li>git rm -rf .</li><li>git commit --allow-empty -m "Initial deploy"</li><li>git push --set-upstream origin gh-pages</li></ol></code></pre>
 <p>This creates the branch and pushes it.  You could add initial build files instead of an empty commit.  Note that this removes all files from the repository!</p>
 <p>If the branch already exists, you don't have to do this step.</p>
 <h3>Step 2 - Setup your repository:</h3>
-<pre><code><span class='line'><span class='function'>git</span> checkout main</code></pre>
+<pre class='highlighted'><code><ol><li>git checkout main</li></ol></code></pre>
 <p>You will then have to choose the name of your build directory.  I have chosen <code>/build</code> in here, however you can pick whatever you want.</p>
 <p>Add <code>/build</code> to your <code>.gitignore</code> file (make one if you don't already have one).  Git metadata and your build files will be created within the folder that shouldn't be committed to the main branch.</p>
-<pre><code><span class='line'><span class='function'>git</span> worktree add build gh-pages</code></pre>
+<pre class='highlighted'><code><ol><li>git worktree add build gh-pages</li></ol></code></pre>
 <p>This creates a view of the gh-pages branch you created in step 2 within the <code>/build</code> directory.</p>
 <h3>Step 3 - Build and commit:</h3>
 <p>Run your code to put the website's built files within the <code>/build</code> directory.  Note that the folder will contain a <code>.git</code> file, which should NOT be removed by your build scripts! This means you cannot just delete the build directory to remove old artifacts.</p>
 <p>Then, to commit your built files:</p>
-<pre><code><span class='line'><span class='function'>cd</span> build</span>
-<span class='line'><span class='function'>git</span> add .</span>
-<span class='line'><span class='function'>git</span> commit <span class='constant'>-m</span> <span class='string'>"Deploy"</span></span>
-<span class='line'><span class='function'>git</span> push</code></pre>
+<pre class='highlighted'><code><ol><li>cd build</li><li>git add .</li><li>git commit -m "Deploy"</li><li>git push</li></ol></code></pre>
 <p>In my case, the git UI within vscode can display the build directory as a worktree with a separate commit button, without having to run the above commands manually.</p>
 <h3>Step 4 - Done</h3>
 <p>That's it!  Use <code>git commit</code> from the root of the repository to update the code and from the build directory to deploy.</p>

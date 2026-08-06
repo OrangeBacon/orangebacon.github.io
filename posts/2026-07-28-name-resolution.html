@@ -72,8 +72,7 @@
 <p>The easiest option for allocating strings is to convert each <code>&amp;str</code> into a <code>String</code> and store that directly in the tree.  This, however requires calling the allocator for each string.  Additionally, strings are 24 bytes (at least on the 64bit platforms I use), which would make the new tree quite big if used everywhere.  Finally, to check if strings are equal is O(n), which can get slow with a lot of strings.</p>
 <p>Instead, I am 'interning' the strings.  I create a list of all strings used in the tree, then whenever I want to include a string in the tree, I put the index into that list.  I'm using <code>u32</code> to store the index, as it is unlikely that anyone will exceed 2^32 strings in a single file.  I then use a hash map to convert from a String into its ID.  Therefore, equality on strings is as simple as checking if the string ids are equal, rather than checking the whole length of the string.</p>
 <p>This uses these fields stored within the name resolution pass:</p>
-<pre><code><span class='line'>map<span class='punctuation delimiter'>:</span> <span class='constructor'>HashMap</span>&lt;<span class='constructor'>String</span><span class='punctuation delimiter'>,</span> <span class='constructor'>StringId</span>&gt;</span>
-<span class='line'>string_table<span class='punctuation delimiter'>:</span> <span class='constructor'>Vec</span>&lt;<span class='constructor'>String</span>&gt;</code></pre>
+<pre class='highlighted'><code><ol><li class='line-highlight'><span class='variable'>map</span><span class='operator'>:</span> <span class='class'>HashMap</span><span class='operator'>&lt;</span><span class='class'>String</span><span class='punctuation'>,</span> <span class='class'>StringId</span><span class='operator'>&gt;</span><span class='punctuation'>,</span></li><li><span class='variable'>string_table</span><span class='operator'>:</span> <span class='class'>Vec</span><span class='operator'>&lt;</span><span class='class'>String</span><span class='operator'>&gt;</span></li></ol></code></pre>
 <p>There are significantly more efficient string interning methods than this<a href='#fn-1' id='fn-ref-1' role='doc-noteref' class='footnote-reference'><sup>[1]</sup></a>, however they are more complex, this simple method will work for now.</p>
 <h2>Literal resolution</h2>
 <p>Within the lua source code, string literals can contain escape sequences such as <code>\n</code> for representing line breaks, <code>\012</code> to represent the decimal code point numbered <code>012</code> and many more.  These escape sequences make writing string literals easier, however need translating into their actual value before the string can be used.  I chose to implement this translation within the name resolution pass as it allows the strings to be interned as explained above.</p>
@@ -89,30 +88,14 @@
 <h4><code>_ENV</code></h4>
 <p>The environment that a global variable is looked up in is initially defined by the compiler, before the start of any user code.  However, there is nothing stopping someone writing directly to <code>_ENV</code>, or declaring a local variable which shadows <code>_ENV</code>.</p>
 <p>If I define the function:</p>
-<pre><code><span class='line'><span class='keyword'>local</span> <span class='variable'>count</span> <span class='operator'>=</span> <span class='number'>0</span></span>
-<span class='line'><span class='keyword'>local</span> <span class='keyword function'>function</span> <span class='function'>set_env</span><span class='punctuation bracket'>(</span><span class='punctuation bracket'>)</span></span>
-<span class='line'>    <span class='keyword return'>return</span> <span class='function builtin'>setmetatable</span><span class='punctuation bracket'>(</span><span class='constructor'>{</span><span class='field'>print</span> <span class='operator'>=</span> <span class='variable'>print</span><span class='constructor'>}</span><span class='punctuation delimiter'>,</span> <span class='constructor'>{</span></span>
-<span class='line'>        <span class='function'>__index</span> <span class='operator'>=</span> <span class='keyword function'>function</span><span class='punctuation bracket'>(</span><span class='parameter'>table</span><span class='punctuation delimiter'>,</span> <span class='parameter'>key</span><span class='punctuation bracket'>)</span></span>
-<span class='line'>            <span class='variable'>count</span> <span class='operator'>=</span> <span class='variable'>count</span> <span class='operator'>+</span> <span class='number'>1</span></span>
-<span class='line'>            <span class='function builtin'>print</span><span class='punctuation bracket'>(</span><span class='variable'>count</span><span class='punctuation bracket'>)</span></span>
-<span class='line'>            <span class='keyword return'>return</span> <span class='string'>"a"</span></span>
-<span class='line'>        <span class='keyword function'>end</span></span>
-<span class='line'>    <span class='constructor'>}</span><span class='punctuation bracket'>)</span></span>
-<span class='line'><span class='keyword function'>end</span></code></pre>
+<pre class='highlighted'><code><ol><li>local count = 0</li><li>local function set_env()</li><li>    return setmetatable({print = print}, {</li><li>        __index = function(table, key)</li><li>            count = count + 1</li><li>            print(count)</li><li>            return "a"</li><li>        end</li><li>    })</li><li>end</li></ol></code></pre>
 <p>Then the below code, prints <code>1 2 3</code>.</p>
-<pre><code><span class='line'><span class='keyword'>local</span> <span class='variable'>_ENV</span> <span class='operator'>=</span> <span class='function call'>set_env</span><span class='punctuation bracket'>(</span><span class='punctuation bracket'>)</span></span>
-<span class='line'><span class='variable'>a</span> <span class='operator'>=</span> <span class='variable'>not_found</span></span>
-<span class='line'><span class='variable'>a</span> <span class='operator'>=</span> <span class='variable'>help</span></span>
-<span class='line'><span class='variable'>b</span> <span class='operator'>=</span> <span class='variable'>owo</span></code></pre>
+<pre class='highlighted'><code><ol><li>local _ENV = set_env()</li><li>a = not_found</li><li>a = help</li><li>b = owo</li></ol></code></pre>
 <p>If the existing value of <code>_ENV</code> is modified, as in the below code:</p>
-<pre><code><span class='line'><span class='keyword'>local</span> <span class='keyword function'>function</span> <span class='function'>p</span><span class='punctuation bracket'>(</span><span class='punctuation bracket'>)</span> <span class='function builtin'>print</span><span class='punctuation bracket'>(</span><span class='variable'>not_found</span><span class='punctuation bracket'>)</span> <span class='keyword function'>end</span></span>
-<span class='line'><span class='variable'>_ENV</span> <span class='operator'>=</span> <span class='function call'>set_env</span><span class='punctuation bracket'>(</span><span class='punctuation bracket'>)</span></span>
-<span class='line'><span class='function call'>p</span><span class='punctuation bracket'>(</span><span class='punctuation bracket'>)</span> <span class='comment'>-- 1 a</span></code></pre>
+<pre class='highlighted'><code><ol><li>local function p() print(not_found) end</li><li>_ENV = set_env()</li><li>p() -- 1 a</li></ol></code></pre>
 <p>Then the environment changes within the function, as it is changing the value of the environment, even though the memory location which is read within the function doesn't change.</p>
 <p>Alternatively, if a new environment is declared e.g.:</p>
-<pre><code><span class='line'><span class='keyword'>local</span> <span class='keyword function'>function</span> <span class='function'>p</span><span class='punctuation bracket'>(</span><span class='punctuation bracket'>)</span> <span class='function builtin'>print</span><span class='punctuation bracket'>(</span><span class='variable'>not_found</span><span class='punctuation bracket'>)</span> <span class='keyword function'>end</span></span>
-<span class='line'><span class='keyword'>local</span> <span class='variable'>_ENV</span> <span class='operator'>=</span> <span class='function call'>set_env</span><span class='punctuation bracket'>(</span><span class='punctuation bracket'>)</span></span>
-<span class='line'><span class='function call'>p</span><span class='punctuation bracket'>(</span><span class='punctuation bracket'>)</span> <span class='comment'>-- nil</span></code></pre>
+<pre class='highlighted'><code><ol><li>local function p() print(not_found) end</li><li>local _ENV = set_env()</li><li>p() -- nil</li></ol></code></pre>
 <p>Then then the function hasn't had its environment modified, so is still using the variable for the environment that was in scope when it was declared.  Another way of thinking about this is as if every function captures the <code>_ENV</code> value when it is defined, making all functions closures.</p>
 <p>All this is relatively un-intuitive, but can allow for some pretty powerful patterns, e.g. sandboxing, logging, and weird code only useful to confuse people.  As dynamic as it seems, this is significantly less dynamic than the previous system (<code>setfenv</code>/<code>getfenv</code>), which allowed changing the environment of a function after it had been declared.</p>
 <p>Either way, I intend to support <code>_ENV</code>, and its dynamic nature.</p>
@@ -122,23 +105,13 @@
 <p>More interesting are the global statements that don't end in <code>*</code>, for example <code>global a</code>.  The main effect of this is to declare <code>a</code> to be a global variable, however it additionally invalidates any <code>global *</code> statements.  This means that any globals not introduced in following global statements will produce an error at compile time.  This overriding includes overriding the implicit <code>global *</code> at the start of every file.</p>
 <p>If a global statement has an initialiser e.g. <code>global a = 5</code>, then it checks if the global variable is nil.  If so, it sets the value of the global, otherwise a run-time error is thrown.</p>
 <p>The global statements are all lexically scoped.  This means that you can type one within a block and it will only effect the code within that block.  As an example:</p>
-<pre><code><span class='line'><span class='keyword'>do</span></span>
-<span class='line'>    <span class='keyword'>global</span> <span class='variable'>a</span> <span class='operator'>=</span> <span class='number'>5</span></span>
-<span class='line'>    <span class='function builtin'>print</span><span class='punctuation bracket'>(</span><span class='variable'>a</span><span class='punctuation bracket'>)</span></span>
-<span class='line'><span class='keyword'>end</span></span>
-<span class='line'><span class='function builtin'>print</span><span class='punctuation bracket'>(</span><span class='variable'>b</span><span class='punctuation bracket'>)</span></code></pre>
+<pre class='highlighted'><code><ol><li>do</li><li>    global a = 5</li><li>    print(a)</li><li>end</li><li>print(b)</li></ol></code></pre>
 <p>Will print <code>5 nil</code>, but not error, as the implicit <code>global *</code> is only overridden within the block, but it is in scope at the <code>print(b)</code> statement.</p>
 <h4>Combination of the 2</h4>
 <p>The 2 global variable systems are both quite different.  Lua by default uses both at the same time, which means that a <code>global</code> statement can contradict what would be possible using <code>_ENV</code>.</p>
-<pre><code><span class='line'><span class='keyword'>global</span><span class='punctuation bracket'>&lt;</span><span class='attribute'>const</span><span class='punctuation bracket'>&gt;</span> <span class='variable'>a</span> <span class='operator'>=</span> <span class='number'>5</span></span>
-<span class='line'><span class='keyword'>local</span> <span class='variable'>_ENV</span> <span class='operator'>=</span> <span class='constructor'>{</span><span class='constructor'>}</span></span>
-<span class='line'><span class='variable'>a</span> <span class='operator'>=</span> <span class='number'>3</span> <span class='comment'>-- cannot assign to a constant</span></code></pre>
+<pre class='highlighted'><code><ol><li>global&lt;const&gt; a = 5</li><li>local _ENV = {}</li><li>a = 3 -- cannot assign to a constant</li></ol></code></pre>
 <p>In this program, the <code>&lt;const&gt;</code> attribute is applied to the first environment and once it has been replaced, the attribute still applies, but to a completely different variable.</p>
-<pre><code><span class='line'><span class='keyword'>global</span> <span class='variable'>a</span> <span class='operator'>=</span> <span class='number'>5</span></span>
-<span class='line'><span class='keyword'>global</span> <span class='variable'>print</span></span>
-<span class='line'><span class='function builtin'>print</span><span class='punctuation bracket'>(</span><span class='variable'>b</span><span class='punctuation bracket'>)</span> <span class='comment'>-- error</span></span>
-<span class='line'><span class='keyword'>local</span> <span class='variable'>_ENV</span> <span class='operator'>=</span> <span class='constructor'>{</span> <span class='field'>b</span> <span class='operator'>=</span> <span class='number'>5</span><span class='punctuation delimiter'>,</span> <span class='field'>print</span> <span class='operator'>=</span> <span class='variable'>print</span> <span class='constructor'>}</span></span>
-<span class='line'><span class='function builtin'>print</span><span class='punctuation bracket'>(</span><span class='variable'>b</span><span class='punctuation bracket'>)</span> <span class='comment'>-- still an error because of the lexical scope of `global`</span></code></pre>
+<pre class='highlighted'><code><ol><li>global a = 5</li><li>global print</li><li>print(b) -- error</li><li>local _ENV = { b = 5, print = print }</li><li>print(b) -- still an error because of the lexical scope of `global`</li></ol></code></pre>
 <p>In this one, the first <code>global</code> statement means that un-defined globals will cause an error.  However, by changing the environment, I define <code>b</code>, but it wasn't using a global statement, so it still errors at compile-time, even though the variable does exist at run-time.</p>
 <p>Note that I had to include <code>global print</code> in the file cannot even see the standard library of lua!</p>
 <h4>What was Implemented</h4>
@@ -160,8 +133,7 @@
 <h3><code>&lt;close&gt;</code></h3>
 <p>In order to implement locals with the <code>&lt;close&gt;</code> attribute, I recorded where the scope of each local variable starts and ends.  For variables introduced as function parameters or loop variables, this is trivial to calculate from the name tree without recording it.  These variables also cannot have attributes applied to them.  However, for variables defined in a <code>local</code> statement, it is less trivial.  I therefore added <code>ScopeStart(VariableID)</code> and <code>ScopeEnd(VariableID)</code> statements to the tree for each local variable.</p>
 <p>The scope ends are not stored in the tree as statements, they are stored as a separate list of variable IDs which need closing, for all times a scope ends.  To show why its a separate list, consider this example:</p>
-<pre><code><span class='line'><span class='keyword'>local</span> <span class='variable'>file</span><span class='punctuation bracket'>&lt;</span><span class='attribute'>close</span><span class='punctuation bracket'>&gt;</span> <span class='operator'>=</span> <span class='variable'>io</span><span class='punctuation delimiter'>.</span><span class='function call'>open</span><span class='punctuation bracket'>(</span><span class='string'>"example.txt"</span><span class='punctuation bracket'>)</span></span>
-<span class='line'><span class='keyword return'>return</span> <span class='variable'>file</span><span class='punctuation delimiter'>:</span><span class='method call'>read</span><span class='punctuation bracket'>(</span><span class='number'>10</span><span class='punctuation bracket'>)</span></code></pre>
+<pre class='highlighted'><code><ol><li>local file&lt;close&gt; = io.open("example.txt")</li><li>return file:read(10)</li></ol></code></pre>
 <p>We have the following order of operations:</p>
 <ul>
 <li>open file</li>
@@ -171,10 +143,7 @@
 </ul>
 <p>In order to order the call to <code>__close</code> and the return statement correctly, the list of variables to be closed needs to be recorded separately to the rest of the statements.</p>
 <p>To make this more complex, consider a repeat-loop:</p>
-<pre><code><span class='line'><span class='repeat'>repeat</span></span>
-<span class='line'>	<span class='keyword'>local</span> <span class='variable'>file</span><span class='punctuation bracket'>&lt;</span><span class='attribute'>close</span><span class='punctuation bracket'>&gt;</span> <span class='operator'>=</span> <span class='variable'>io</span><span class='punctuation delimiter'>.</span><span class='function call'>open</span><span class='punctuation bracket'>(</span><span class='string'>"example.txt"</span><span class='punctuation bracket'>)</span></span>
-<span class='line'><span class='repeat'>until</span> <span class='variable'>file</span><span class='punctuation delimiter'>:</span><span class='method call'>read</span><span class='punctuation bracket'>(</span><span class='number'>15</span><span class='punctuation bracket'>)</span></span>
-<span class='line'><span class='keyword return'>return</span></code></pre>
+<pre class='highlighted'><code><ol><li>repeat</li><li>	local file&lt;close&gt; = io.open("example.txt")</li><li>until file:read(15)</li><li>return</li></ol></code></pre>
 <p>This (nonsensical) example should have the following order:</p>
 <ul>
 <li>enter loop
@@ -212,9 +181,9 @@
 <p>The name resolution pass that we've implemented, is a combination of all of the above transformations into one pass over the AST.  This should be a lot nicer to work with moving forwards, as we know that all of the above transformations were successful.</p>
 <p>There are still several constructs in this resultant tree that can easily be simplified.</p>
 <p>Method calls in lua can be converted into an equivalent function call:</p>
-<pre><code><span class='line'><span class='variable'>a</span><span class='punctuation delimiter'>:</span><span class='method call'>c</span><span class='punctuation bracket'>(</span><span class='punctuation bracket'>)</span></code></pre>
+<pre class='highlighted'><code><ol><li>a:c()</li></ol></code></pre>
 <p>is equivalent to:</p>
-<pre><code><span class='line'><span class='variable'>a</span><span class='punctuation delimiter'>.</span><span class='function call'>c</span><span class='punctuation bracket'>(</span><span class='variable'>a</span><span class='punctuation bracket'>)</span></code></pre>
+<pre class='highlighted'><code><ol><li>a.c(a)</li></ol></code></pre>
 <p>Converting between these 2 reduces the amount of constructs that a type checker has to deal with, so should make things easier for us in the future.</p>
 <p>Making changes like this will be done in the next pass, consuming the tree produced by the name resolution pass, as there is quite a bit more complexity than just the simple transformation above.</p>
 <p>I also intend to write more about the design direction and future plans for the language, at some point, potentially before writing the next pass? (who knows? not me)</p>
