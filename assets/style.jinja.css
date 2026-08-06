@@ -172,6 +172,67 @@ pre {
         border-left: 1px var(--text-colour) solid;
         padding-left: 0.5em;
     }
+
+    .background {
+        color: var(--code-background);
+    }
+
+    .keyword {
+        color: var(--code-keyword);
+    }
+
+    .type {
+        color: var(--code-type);
+    }
+
+    .literal {
+        color: var(--code-literal);
+    }
+
+    .number {
+        color: var(--code-number);
+    }
+
+    .punctuation {
+        color: var(--code-punctuation);
+    }
+
+    .operator {
+        color: var(--code-operator);
+    }
+
+    .string {
+        color: var(--code-string);
+    }
+
+    .symbol {
+        color: var(--code-symbol);
+    }
+
+    .variable {
+        color: var(--code-variable);
+    }
+
+    .constant {
+        color: var(--code-constant);
+    }
+
+    .class {
+        color: var(--code-class);
+    }
+
+    .comment {
+        color: var(--code-comment);
+    }
+
+    .macro {
+        color: var(--code-macro);
+    }
+
+    .diff {
+        color: var(--code-diff);
+    }
+
 }
 
 hr {
