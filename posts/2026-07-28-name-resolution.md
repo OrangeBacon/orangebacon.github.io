@@ -15,9 +15,11 @@ The easiest option for allocating strings is to convert each `&str` into a `Stri
 Instead, I am 'interning' the strings.  I create a list of all strings used in the tree, then whenever I want to include a string in the tree, I put the index into that list.  I'm using `u32` to store the index, as it is unlikely that anyone will exceed 2^32 strings in a single file.  I then use a hash map to convert from a String into its ID.  Therefore, equality on strings is as simple as checking if the string ids are equal, rather than checking the whole length of the string.
 
 This uses these fields stored within the name resolution pass:
-```rs
-map: HashMap<String, StringId>
+```rs hide=# highlight=2
+# struct A {
+map: HashMap<String, StringId>,
 string_table: Vec<String>
+# }
 ```
 
 There are significantly more efficient string interning methods than this[^1], however they are more complex, this simple method will work for now.

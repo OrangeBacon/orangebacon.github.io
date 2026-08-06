@@ -12,3 +12,6 @@ jiff = { version = "0.2.35", default-features = false, features = [
     "alloc",
     "std",
 ] }
+syn = { version = "3.0.3", features = ["full"] }
+quote = "1.0.47"
+proc-macro2 = { version = "1.0.107", features = ["span-locations"] }

@@ -1,3 +1,4 @@
+mod rust;
 mod unknown;
 
 use std::{collections::HashMap, error::Error, fmt::Display};
@@ -15,13 +16,14 @@ struct SourceDescription<'a> {
 }
 
 /// A highlighted source file
+#[derive(Debug)]
 struct HighlightedSource {
     /// All data to be displayed
     lines: Vec<HighlightedLine>,
 }
 
 /// A single line within a highlighted source code file.
-#[derive(Default)]
+#[derive(Debug, Default)]
 struct HighlightedLine {
     /// Highlights that apply to the whole line
     kind: HighlightedLineKind,
@@ -31,7 +33,7 @@ struct HighlightedLine {
 }
 
 /// Highlights for a whole line of code
-#[derive(Default)]
+#[derive(Debug, Default)]
 enum HighlightedLineKind {
     #[default]
     None,
@@ -49,10 +51,7 @@ enum HighlightScope {
     /// keyword in a regular Algol-style language
     Keyword,
 
-    // built-in or library object (constant, class, function)
-    BuiltIn,
-
-    // data type (in a language with syntactically significant types) (string, int, array, etc.)
+    /// data type (in a language with syntactically significant types) (string, int, array, etc.)
     Type,
 
     /// special identifier for a built-in value (true, false, null, etc.)
@@ -67,44 +66,26 @@ enum HighlightScope {
     /// aux. punctuation that should be subtly highlighted (parentheses, brackets, etc.)
     Punctuation,
 
-    /// object property obj.prop1.prop2.value
-    Property,
-
-    /// literal regular expression
-    Regexp,
-
     /// literal string, character
     String,
-
-    /// an escape character such as \n
-    Escape,
 
     /// symbolic constant, interned string, goto label
     Symbol,
 
-    // variables
+    /// variables
     Variable,
 
     /// variable that is a constant value, ie MAX_FILES
     Constant,
 
-    // name of a class (interface, trait, module, etc)
+    /// name of a class (interface, trait, module, etc)
     Class,
-
-    // name of a function
-    Function,
 
     /// comments
     Comment,
 
-    /// documentation markup within comments, e.g. @params
-    DocTag,
-
-    /// flags, modifiers, annotations, processing instructions, preprocessor directives, etc
-    Meta,
-
-    /// REPL prompts, shell prompts, or similar
-    Prompt,
+    /// Macro call, definition, etc.
+    Macro,
 
     /// Diff markers, or similar
     Diff,
@@ -244,7 +225,7 @@ fn process_diff(desc: &SourceDescription, source: &[&str]) -> HighlightedSource 
 fn raw_highlight(desc: &SourceDescription, source: &[&str]) -> HighlightedSource {
     let source = source.join("\n");
     match desc.language.as_str() {
-        // "rs" | "rust" => todo!(),
+        "rs" | "rust" => rust::highlight(&source),
         // "lua" => todo!(),
         _ => unknown::highlight(&source),
     }
