@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>urn:uuid:09715801-0eb3-46ac-90e3-1b955463bf48</id>
     <title>Ella's Writing</title>
-    <updated>2026-08-06T00:00:00Z</updated>
+    <updated>2026-08-10T00:00:00Z</updated>
     <author>
         <name>Ella</name>
         <uri>https://orangebacon.github.io/</uri>
@@ -13,6 +13,12 @@
     <subtitle>Ella's blog posts on pretty much anything she's interested in, whether technical, social, or something else!</subtitle>
 
     <entry>
+        <summary>its been another year, i guess</summary>
+        <id>https://orangebacon.github.io/posts/2026-08-10-year</id>
+        <updated>2026-08-10T00:00:00Z</updated>
+        <title>another year</title>
+        <link rel="alternate" href="https://orangebacon.github.io/posts/2026-08-10-year" />
+    </entry><entry>
         <summary>Processing an abstract syntax tree into a more useful format.</summary>
         <id>https://orangebacon.github.io/posts/2026-07-28-name-resolution</id>
         <updated>2026-07-28T00:00:00Z</updated>
