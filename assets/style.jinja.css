@@ -233,6 +233,17 @@ pre {
         color: var(--code-diff);
     }
 
+    li.line-highlight {
+        background-color: var(--code-highlight);
+    }
+
+    li.line-add {
+        background-color: var(--code-add);
+    }
+
+    li.line-remove {
+        background-color: var(--code-remove);
+    }
 }
 
 hr {

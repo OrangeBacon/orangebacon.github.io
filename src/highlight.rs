@@ -233,11 +233,11 @@ fn process_diff(desc: &SourceDescription, source: &[&str]) -> HighlightedSource 
                 line.kind = HighlightedLineKind::DiffAddition;
                 line
             }
-            LineSource::Default(idx) => std::mem::take(&mut a.lines[idx]),
+            LineSource::Default(idx) => std::mem::take(&mut b.lines[idx]),
             LineSource::Annotation { start, end } => {
                 let lines = [(HighlightScope::Diff, start), (HighlightScope::None, end)]
                     .into_iter()
-                    .filter(|(_, s)| s.is_empty())
+                    .filter(|(_, s)| !s.is_empty())
                     .map(|(a, b)| (a, b.to_string()));
                 HighlightedLine {
                     kind: HighlightedLineKind::None,

@@ -66,6 +66,12 @@ impl<'a> TokenIter<'a> {
             source,
         };
         this.run(stream);
+
+        let range = this.current_byte..this.source.len();
+        if !range.is_empty() {
+            this.add_token(this.current_line_no, range, HighlightScope::None);
+        }
+
         this
     }
 
@@ -163,10 +169,6 @@ impl<'a> TokenIter<'a> {
 
         let text = &self.source[range.start..range.end];
         for (idx, line) in text.lines().enumerate() {
-            if line.is_empty() {
-                continue;
-            }
-
             self.push_token(HighlightToken {
                 kind,
                 text: line.to_string(),
@@ -174,7 +176,17 @@ impl<'a> TokenIter<'a> {
             });
         }
 
-        let line = self.output.last().map(|l| l.line).unwrap_or(0);
+        let mut line = self.output.last().map(|l| l.line).unwrap_or(0);
+
+        if text.ends_with("\n") {
+            self.push_token(HighlightToken {
+                kind,
+                text: String::new(),
+                line: line_no + 1,
+            });
+            line += 1;
+        }
+
         self.current_line_no = line;
         self.current_byte = range.end;
     }
