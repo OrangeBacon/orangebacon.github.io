@@ -17,3 +17,7 @@
 --code-comment: #6A9955;
 --code-macro: #569CD6;
 --code-diff: #d2a8ff;
+
+--code-highlight: rgba(255,255,0,0.1);
+--code-add: rgba(0,255,0,0.15);
+--code-remove: rgba(255,0,0,0.3);

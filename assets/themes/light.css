@@ -18,6 +18,6 @@
 --code-macro: #0000FF;
 --code-diff: #8250df;
 
---line-add
---line-remove: #ffebe9;
---line-highlight: #dafbe1;
+--code-highlight: rgba(255,255,0,0.4);
+--code-add: rgba(0,255,0,0.15);
+--code-remove: rgba(255,0,0,0.15)

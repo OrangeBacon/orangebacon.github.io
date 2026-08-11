@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Syntax Highlighting | Ella's Writing</title>
+    <meta name="viewport" content="width=device-width">
+    <link rel="stylesheet" href="/assets/style.css">
+    <meta name="color-scheme" content="dark light">
+    <link rel="alternate" type="application/rss+xml" href="/rss.xml">
+    <link rel="alternate" type="application/atom+xml" href="/atom.xml">
+    
+<meta name="description" content="Putting more effort than is reasonable into syntax highlighting" />
+
+</head>
+
+<body>
+    <header>
+        <nav>
+            <a href="/">Ella's Writing</a>
+            <div class="theme-container">
+                <label for="theme">Theme: </label>
+                <select id="theme" title="Light/dark mode theme toggle">
+                    <option value="Automatic">Automatic</option>
+                    <option value="Light">Light</option>
+                    <option value="Dark">Dark</option>
+                </select>
+            </div>
+            <script>
+                (() => {
+    // enhancement to load/store, inlined to avoid flash of wrong-theme
+    const el = document.getElementById("theme");
+    const meta = document.querySelector("meta[name='color-scheme']");
+    const values = [...el.children].map(el => el.value);
+    const storage_key = "dark-mode";
+
+    function setTheme() {
+        let value = el.value;
+        window.localStorage.setItem(storage_key, value);
+        if (value.includes("Light")) {
+            meta.setAttribute("content", "light");
+        } else if (value.includes("Dark")) {
+            meta.setAttribute("content", "dark");
+        } else {
+            meta.setAttribute("content", "light dark");
+        }
+    }
+
+    let stored = window.localStorage.getItem(storage_key);
+    if (!stored || !values.includes(stored)) {
+        stored = values[0];
+    }
+    el.value = stored;
+
+    setTheme();
+
+    el.addEventListener("change", setTheme);
+})();
+            </script>
+        </nav>
+        
+<h1>Syntax Highlighting</h1>
+<p role="doc-subtitle">Written by Ella on <time datetime="2026-08-11">2026-08-11</time>, without AI</p>
+
+    </header>
+
+    
+<main>
+    <p>for some reason, i want good syntax highlighting on this website.  however, i am not especially happy with all the pre-existing solutions.  therefore, i want to implement my own syntax highlighter!  <del>one thats perfect and does everything ever and might even be the best ever</del> not really, i'll implement one that is only useful for this website in particular, and add features over time as needed.</p>
+<h2>problems with the existing</h2>
+<p>there are many existing highlighters, but they all have some issues that make them not work quite right for me, some of these issues are:</p>
+<ul>
+<li>old syntaxes, that can't cope with new language features</li>
+<li>hard to add new languages</li>
+<li>bake the themes into the output, so css cannot change the colouring</li>
+<li>slow (start up or run time)</li>
+<li>hard to get good html output (line numbers should use numbered lists as the native html numbering solution)</li>
+</ul>
+<p>therefore, i have decided to write my own one</p>
+<h2>my syntax highlighting</h2>
+<p>in order to write a syntax highlighter, lets start by working out the inputs and outputs.</p>
+<p>the easiest input is the source code, just copy it from the markdown file. for the language to highlight, i wanted to know both the language itself and any properties.  i therefore implemented a simple parser to get the value of the properties and the language name.</p>
+<p>the properties were chosen to allow more control over the output code, so it can look better for someone reading the rendered code block:</p>
+<ul>
+<li>diff - if a diff is requested, the highlighter should be able to tell which lines are being added, which are being removed, and work out how to highlight the code.  most parsers would (should?) error if they encounter a diff marker in the code, so a diff handler would need to remove the markers, highlight the code and then re-construct the diff.</li>
+<li>line highlighting - show a yellow background for some of the lines, to make them stand out more</li>
+<li>hide - some of the source lines are needed to make the language parse correctly, but don't add anything to the page, so should be hidden from the reader</li>
+</ul>
+<p>i can specify these properties in the header line of the code block, e.g.:
+rust diff=true highlight=1,3,4 hide=#</p>
+<p>the output was represented per line, with a style for every length of input text:</p>
+<pre class='highlighted'><code><ol><li><span class='keyword'>struct</span> <span class='class'>Line</span> <span class='punctuation'>{</span></li><li>    <span class='variable'>content</span><span class='operator'>:</span> <span class='class'>Vec</span><span class='operator'>&lt;</span><span class='punctuation'>(</span><span class='class'>Style</span><span class='punctuation'>,</span> <span class='operator'>&amp;</span><span class='type'>str</span><span class='punctuation'>)</span><span class='operator'>&gt;</span><span class='punctuation'>,</span></li><li>    <span class='variable'>kind</span><span class='operator'>:</span> <span class='class'>Kind</span><span class='punctuation'>,</span></li><li><span class='punctuation'>}</span></li><li> </li><li><span class='keyword'>enum</span> <span class='class'>Kind</span> <span class='punctuation'>{</span></li><li>    <span class='literal'>None</span><span class='punctuation'>,</span></li><li>    <span class='class'>Highlight</span><span class='punctuation'>,</span></li><li>    <span class='class'>DiffAdd</span><span class='punctuation'>,</span></li><li>    <span class='class'>DiffRemove</span><span class='punctuation'>,</span></li><li><span class='punctuation'>}</span></li></ol></code></pre>
+<h2>rust</h2>
+<p>syntax highlighting rust code is pretty hard.  if it is tokenised, it will produce a token tree, not a simple list of tokens.  then, if you parse that into a syntax tree, some of the token boundaries will have changed.  for example:</p>
+<pre class='highlighted'><code><ol><li><span class='variable'>tuple</span><span class='operator'>.</span><span class='number'>0</span><span class='operator'>.</span><span class='number'>1</span></li></ol></code></pre>
+<p>compared to</p>
+<pre class='highlighted'><code><ol><li><span class='variable'>tuple</span><span class='punctuation'>(</span><span class='number'>0.1</span><span class='punctuation'>)</span></li></ol></code></pre>
+<p>has the <code>0.1</code> parsed as the tuple accessors, or as a floating point number.  we can parse rust using <a href="https://crates.io/crates/syn">syn</a>, which will take care of all this for us.  syn is typically used for procedural macros, however there isn't anything stopping me using it as a generic rust parser, outside of a macro.  we can then convert the token stream produced by syn into the output format described above.</p>
+<p>converting from syn's output into something usable by a syntax highlighter was a lot more work than i expected. in particular, i had to:</p>
+<ul>
+<li>work out which line each token was on, including blank lines, new lines at the end of source code and tokens that take more than 1 line,</li>
+<li>recurse through the tokens (as rust's tokens are a tree)</li>
+<li>detect identifiers vs keywords (as the tokens don't have any difference)</li>
+<li>work out if there should have been a comment or whitespace between any 2 tokens</li>
+<li>work out if something is a variable or a type (i cheated and checked the capitalisation)</li>
+</ul>
+<h2>lua</h2>
+<p>i'm using lua code a decent amount, but don't have it highlighted.  i could implement syntax highlighting using the existing parser, but that would be hard, in the same way as it is in rust.  if i wait until after ive implemented type checking, then the actual kind of each token can be represented more accurately.  i should also be able to include the syntax highlighter in the compiler, to get more consistent output in multiple different environments.</p>
+<h2>pikchr</h2>
+<p>to create the diagrams in the site, i currently use <a href="https://pikchr.org/home/doc/trunk/homepage.md">pikchr</a>.  in each markdown file, the diagrams include the source of the diagram in a code block.  the input and output from pikchr is worked out completely separately from the other code blocks</p>
+<h2>other languages</h2>
+<p>i've used several other languages so far, but only very briefly.  if i decide that those other languages need highlighting, i could use an existing syntax highlighter and work out how to put its output into this highlighter, same as i did for rust.</p>
+<h2>overall data flow</h2>
+<p>The overall data flow of the highlighter, for all languages is:</p>
+<svg xmlns='http://www.w3.org/2000/svg' style='font-size:initial;' viewBox="0 0 404.87 777.557">
+<circle cx="9.9936" cy="56.16" r="3.6"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<polygon points="36.6336,56.16 25.1136,60.48 25.1136,51.84" style="fill:rgb(255,255,255)"/>
+<path d="M13.5936,56.16L30.8736,56.16"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<path d="M36.6336,56.16L108.634,110.16L180.634,56.16L108.634,2.16Z"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<text x="108.634" y="46.08" text-anchor="middle" fill="rgb(255,255,255)" dominant-baseline="central">Is</text>
+<text x="108.634" y="66.24" text-anchor="middle" fill="rgb(255,255,255)" dominant-baseline="central">Diagram?</text>
+<polygon points="234.634,56.16 223.114,60.48 223.114,51.84" style="fill:rgb(255,255,255)"/>
+<path d="M180.634,56.16L228.874,56.16"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<text x="207.634" y="44.46" text-anchor="middle" fill="rgb(255,255,255)" dominant-baseline="central">Yes</text>
+<path d="M234.634,102.96L347.414,102.96L347.414,30.96L325.814,9.36L234.634,9.36Z"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<path d="M325.814,9.36L325.814,30.96L347.414,30.96"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<text x="291.024" y="46.08" text-anchor="middle" fill="rgb(255,255,255)" dominant-baseline="central">HTML+SVG</text>
+<text x="291.024" y="66.24" text-anchor="middle" fill="rgb(255,255,255)" dominant-baseline="central">Output</text>
+<polygon points="108.634,182.16 104.314,170.64 112.954,170.64" style="fill:rgb(255,255,255)"/>
+<path d="M108.634,110.16L108.634,176.4"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<text x="108.634" y="146.16" text-anchor="start" fill="rgb(255,255,255)" dominant-baseline="central">  No</text>
+<path d="M45.36,232.56L171.907,232.56A25.2 25.2 0 0 0 197.107 207.36A25.2 25.2 0 0 0 171.907 182.16L45.36,182.16A25.2 25.2 0 0 0 20.16 207.36A25.2 25.2 0 0 0 45.36 232.56Z"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<text x="108.634" y="197.28" text-anchor="middle" fill="rgb(255,255,255)" dominant-baseline="central">Remove prefix from</text>
+<text x="108.634" y="217.44" text-anchor="middle" fill="rgb(255,255,255)" dominant-baseline="central">lines to be hidden</text>
+<polygon points="108.634,268.56 104.314,257.04 112.954,257.04" style="fill:rgb(255,255,255)"/>
+<path d="M108.634,232.56L108.634,262.8"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<path d="M53.9712,309.557L108.634,350.554L163.296,309.557L108.634,268.56Z"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<text x="108.634" y="309.557" text-anchor="middle" fill="rgb(255,255,255)" dominant-baseline="central">Is diff?</text>
+<polygon points="234.634,309.557 223.114,313.877 223.114,305.237" style="fill:rgb(255,255,255)"/>
+<path d="M163.296,309.557L228.874,309.557"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<text x="198.965" y="297.857" text-anchor="middle" fill="rgb(255,255,255)" dominant-baseline="central">Yes</text>
+<path d="M259.834,334.757L349.286,334.757A25.2 25.2 0 0 0 374.486 309.557A25.2 25.2 0 0 0 349.286 284.357L259.834,284.357A25.2 25.2 0 0 0 234.634 309.557A25.2 25.2 0 0 0 259.834 334.757Z"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<text x="304.56" y="299.477" text-anchor="middle" fill="rgb(255,255,255)" dominant-baseline="central">Split into a and</text>
+<text x="304.56" y="319.637" text-anchor="middle" fill="rgb(255,255,255)" dominant-baseline="central">b documents</text>
+<polygon points="304.56,370.757 300.24,359.237 308.88,359.237" style="fill:rgb(255,255,255)"/>
+<path d="M304.56,334.757L304.56,364.997"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<path d="M231.61,421.157L377.51,421.157A25.2 25.2 0 0 0 402.71 395.957A25.2 25.2 0 0 0 377.51 370.757L231.61,370.757A25.2 25.2 0 0 0 206.41 395.957A25.2 25.2 0 0 0 231.61 421.157Z"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<text x="304.56" y="385.877" text-anchor="middle" fill="rgb(255,255,255)" dominant-baseline="central">Highlight a and b</text>
+<text x="304.56" y="406.037" text-anchor="middle" fill="rgb(255,255,255)" dominant-baseline="central">documents separately</text>
+<polygon points="304.56,457.157 300.24,445.637 308.88,445.637" style="fill:rgb(255,255,255)"/>
+<path d="M304.56,421.157L304.56,451.397"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<path d="M233.683,507.557L375.437,507.557A25.2 25.2 0 0 0 400.637 482.357A25.2 25.2 0 0 0 375.437 457.157L233.683,457.157A25.2 25.2 0 0 0 208.483 482.357A25.2 25.2 0 0 0 233.683 507.557Z"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<text x="304.56" y="472.277" text-anchor="middle" fill="rgb(255,255,255)" dominant-baseline="central">Combine documents</text>
+<text x="304.56" y="492.437" text-anchor="middle" fill="rgb(255,255,255)" dominant-baseline="central">a, b, and diff markers</text>
+<polygon points="108.634,550.757 104.314,539.237 112.954,539.237" style="fill:rgb(255,255,255)"/>
+<path d="M304.56,507.557 L 304.56,518.357 Q 304.56,529.157 289.56,529.157 L 123.634,529.157 Q 108.634,529.157 108.634,537.077 L 108.634,544.997"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<polygon points="108.634,422.554 104.314,411.034 112.954,411.034" style="fill:rgb(255,255,255)"/>
+<path d="M108.634,350.554L108.634,416.794"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<text x="108.634" y="386.554" text-anchor="start" fill="rgb(255,255,255)" dominant-baseline="central">  No</text>
+<path d="M34.0128,452.794L183.254,452.794A15.12 15.12 0 0 0 198.374 437.674A15.12 15.12 0 0 0 183.254 422.554L34.0128,422.554A15.12 15.12 0 0 0 18.8928 437.674A15.12 15.12 0 0 0 34.0128 452.794Z"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<text x="108.634" y="437.674" text-anchor="middle" fill="rgb(255,255,255)" dominant-baseline="central">Highlight document</text>
+<polygon points="108.634,550.757 104.314,539.237 112.954,539.237" style="fill:rgb(255,255,255)"/>
+<path d="M108.634,452.794L108.634,544.997"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<path d="M65.8656,601.157L151.402,601.157A25.2 25.2 0 0 0 176.602 575.957A25.2 25.2 0 0 0 151.402 550.757L65.8656,550.757A25.2 25.2 0 0 0 40.6656 575.957A25.2 25.2 0 0 0 65.8656 601.157Z"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<text x="108.634" y="565.877" text-anchor="middle" fill="rgb(255,255,255)" dominant-baseline="central">Add whole line</text>
+<text x="108.634" y="586.037" text-anchor="middle" fill="rgb(255,255,255)" dominant-baseline="central">highlighting</text>
+<polygon points="108.634,637.157 104.314,625.637 112.954,625.637" style="fill:rgb(255,255,255)"/>
+<path d="M108.634,601.157L108.634,631.397"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<path d="M72.2016,687.557L145.066,687.557A25.2 25.2 0 0 0 170.266 662.357A25.2 25.2 0 0 0 145.066 637.157L72.2016,637.157A25.2 25.2 0 0 0 47.0016 662.357A25.2 25.2 0 0 0 72.2016 687.557Z"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<text x="108.634" y="652.277" text-anchor="middle" fill="rgb(255,255,255)" dominant-baseline="central">Remove lines</text>
+<text x="108.634" y="672.437" text-anchor="middle" fill="rgb(255,255,255)" dominant-baseline="central">to be hidden</text>
+<polygon points="108.634,723.557 104.314,712.037 112.954,712.037" style="fill:rgb(255,255,255)"/>
+<path d="M108.634,687.557L108.634,717.797"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<path d="M53.0208,753.797L164.246,753.797A15.12 15.12 0 0 0 179.366 738.677A15.12 15.12 0 0 0 164.246 723.557L53.0208,723.557A15.12 15.12 0 0 0 37.9008 738.677A15.12 15.12 0 0 0 53.0208 753.797Z"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<text x="108.634" y="738.677" text-anchor="middle" fill="rgb(255,255,255)" dominant-baseline="central">Cleanup output</text>
+<polygon points="234.634,738.677 223.114,742.997 223.114,734.357" style="fill:rgb(255,255,255)"/>
+<path d="M179.366,738.677L228.874,738.677"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<path d="M234.634,775.397L362.966,775.397L362.966,723.557L341.366,701.957L234.634,701.957Z"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<path d="M341.366,701.957L341.366,723.557L362.966,723.557"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+<text x="298.8" y="738.677" text-anchor="middle" fill="rgb(255,255,255)" dominant-baseline="central">HTML Output</text>
+<polygon points="47.0016,662.357 35.4816,666.677 35.4816,658.037" style="fill:rgb(255,255,255)"/>
+<path d="M20.16,207.36 L 11.16,207.36 Q 2.16,207.36 2.16,222.36 L 2.16,647.357 Q 2.16,662.357 17.16,662.357 L 26.2416,662.357 L 41.2416,662.357"  style="fill:none;stroke-width:2.16;stroke:rgb(255,255,255);" />
+</svg>
+<h2>performance</h2>
+<p>the previous tree-sitter version of this website took approximately 600ms to build, every time.  when i removed tree sitter and just output empty strings instead of code blocks, that was reduced to 14ms. now it is 15ms.  as far as i can tell, most of the tree-sitter slowness was due to startup time, however as there is so little work to be done, the startup time is actually important. <a href='#fn-1' id='fn-ref-1' role='doc-noteref' class='footnote-reference'><sup>[1]</sup></a></p>
+<h2>example</h2>
+<pre class='highlighted'><code><ol><li><span class='diff'>@@ 1,2 @@</span> my annotation</li><li class='line-highlight'><span class='keyword'>pub</span> <span class='keyword'>struct</span> <span class='constant'>A</span><span class='punctuation'>(</span><span class='type'>bool</span><span class='punctuation'>);</span></li><li> </li><li class='line-highlight'><span class='keyword'>impl</span> <span class='constant'>A</span> <span class='punctuation'>{</span></li><li class='line-add'>    <span class='keyword'>fn</span> <span class='variable'>example</span><span class='punctuation'>(</span><span class='operator'>&amp;</span><span class='keyword'>mut</span> <span class='literal'>self</span><span class='punctuation'>)</span> <span class='operator'>-&gt;</span> <span class='type'>Self</span> <span class='punctuation'>{</span><span class='comment'> /* ... */ </span><span class='punctuation'>}</span></li><li><span class='punctuation'>}</span></li><li> </li><li class='line-remove'><span class='keyword'>fn</span> <span class='variable'>example2</span><span class='punctuation'>(</span><span class='operator'>&amp;</span><span class='keyword'>mut</span> <span class='literal'>self</span><span class='punctuation'>)</span> <span class='operator'>-&gt;</span> <span class='type'>bool</span> <span class='punctuation'>{</span><span class='comment'> /* ... */ </span><span class='punctuation'>}</span></li></ol></code></pre>
+<h2>conclusion</h2>
+<p>it was probably overkill to have done this, but it feels better?</p>
+
+</main>
+
+
+    <footer>
+        
+<hr aria-hidden='true'/>
+<div role='doc-endnotes' aria-labelledby='notes'>
+    <h2 id='notes'>Notes:</h2>
+    <ol>
+<li class='footnote-definition' id='fn-1' value='1'><p>not that any of these numbers were worked out particularly scientifically, i just ran the site generator a few times by hand and looked at a rough average</p>
+<a role='doc-backlink' href='#fn-ref-1'>↩</a>
+</li>
+</ol></div>
+        <nav>
+            <a href="/rss.xml">RSS</a><a href="/atom.xml">Atom</a>
+            <p role="doc-credit">Ella's Writing &copy; 2026 by Ella is licensed under CC BY-SA-NC 4.0</p>
+        </nav>
+    </footer>
+</body>
+
+</html>

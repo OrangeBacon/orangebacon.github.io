@@ -26,6 +26,10 @@
 --code-comment: #6A9955;
 --code-macro: #569CD6;
 --code-diff: #d2a8ff;
+
+--code-highlight: rgba(255,255,0,0.1);
+--code-add: rgba(0,255,0,0.15);
+--code-remove: rgba(255,0,0,0.3);
     }
     @media (prefers-color-scheme: light) {
         --text-colour: #e6e6e6;
@@ -47,6 +51,10 @@
 --code-comment: #6A9955;
 --code-macro: #569CD6;
 --code-diff: #d2a8ff;
+
+--code-highlight: rgba(255,255,0,0.1);
+--code-add: rgba(0,255,0,0.15);
+--code-remove: rgba(255,0,0,0.3);
     }
 }
 
@@ -71,9 +79,9 @@
 --code-macro: #0000FF;
 --code-diff: #8250df;
 
---line-add
---line-remove: #ffebe9;
---line-highlight: #dafbe1;
+--code-highlight: rgba(255,255,0,0.4);
+--code-add: rgba(0,255,0,0.15);
+--code-remove: rgba(255,0,0,0.15)
 }
 
 :root:has(#theme>option[value="Dark"]:checked) {
@@ -96,6 +104,10 @@
 --code-comment: #6A9955;
 --code-macro: #569CD6;
 --code-diff: #d2a8ff;
+
+--code-highlight: rgba(255,255,0,0.1);
+--code-add: rgba(0,255,0,0.15);
+--code-remove: rgba(255,0,0,0.3);
 }
 
 html {
@@ -309,6 +321,17 @@ pre {
         color: var(--code-diff);
     }
 
+    li.line-highlight {
+        background-color: var(--code-highlight);
+    }
+
+    li.line-add {
+        background-color: var(--code-add);
+    }
+
+    li.line-remove {
+        background-color: var(--code-remove);
+    }
 }
 
 hr {
@@ -401,11 +424,16 @@ ul.posts li a:hover h2 {
     }
 }
 
-svg path {
-    stroke: var(--text-colour) !important
-}
+svg {
+    max-height: 100vh;
 
-svg text,
-svg polygon {
-    fill: var(--text-colour) !important
+    path,
+    circle {
+        stroke: var(--text-colour) !important
+    }
+
+    text,
+    polygon {
+        fill: var(--text-colour) !important
+    }
 }
