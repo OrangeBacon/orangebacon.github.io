@@ -336,11 +336,16 @@ ul.posts li a:hover h2 {
     }
 }
 
-svg path {
-    stroke: var(--text-colour) !important
-}
+svg {
+    max-height: 100vh;
 
-svg text,
-svg polygon {
-    fill: var(--text-colour) !important
+    path,
+    circle {
+        stroke: var(--text-colour) !important
+    }
+
+    text,
+    polygon {
+        fill: var(--text-colour) !important
+    }
 }
