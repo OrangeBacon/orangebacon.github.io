@@ -139,6 +139,12 @@ li {
     color: var(--text-colour);
 }
 
+del {
+    text-decoration: underline;
+    text-underline-offset: -.3em;
+    text-decoration-skip-ink: none;
+}
+
 code {
     color: var(--text-colour);
     font-size: 0.91rem;

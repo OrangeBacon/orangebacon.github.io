@@ -28,7 +28,9 @@ the properties were chosen to allow more control over the output code, so it can
 - hide - some of the source lines are needed to make the language parse correctly, but don't add anything to the page, so should be hidden from the reader
 
 i can specify these properties in the header line of the code block, e.g.:
-    rust diff=true highlight=1,3,4 hide=#
+~~~
+```rust diff=true highlight=1,3,4 hide=#
+~~~
 
 the output was represented per line, with a style for every length of input text:
 ```rust
