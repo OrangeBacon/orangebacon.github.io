@@ -3,29 +3,33 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Home | Ella's Writing</title>
-    <meta name="viewport" content="width=device-width">
-    <link rel="stylesheet" href="/assets/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="dark light">
     <link rel="alternate" type="application/rss+xml" href="/rss.xml">
     <link rel="alternate" type="application/atom+xml" href="/atom.xml">
     
+<title>Home | Ella's Writing</title>
+
+<link rel="stylesheet" href="/assets/style.css">
+
+
 </head>
 
 <body>
-    <header>
-        <nav>
-            <a href="/">Ella's Writing</a>
-            <div class="theme-container">
-                <label for="theme">Theme: </label>
-                <select id="theme" title="Light/dark mode theme toggle">
-                    <option value="Automatic">Automatic</option>
-                    <option value="Light">Light</option>
-                    <option value="Dark">Dark</option>
-                </select>
-            </div>
-            <script>
-                (() => {
+   
+<header>
+    <nav>
+        <a href="/">Ella's Writing</a>
+        <div class="theme-container">
+    <label for="theme">Theme: </label>
+    <select id="theme" title="Light/dark mode theme toggle">
+        <option value="Automatic">Automatic</option>
+        <option value="Light">Light</option>
+        <option value="Dark">Dark</option>
+    </select>
+</div>
+<script>
+    (() => {
     // enhancement to load/store, inlined to avoid flash of wrong-theme
     const el = document.getElementById("theme");
     const meta = document.querySelector("meta[name='color-scheme']");
@@ -54,14 +58,14 @@
 
     el.addEventListener("change", setTheme);
 })();
-            </script>
-        </nav>
-        
+</script>
+    </nav>
+    
 <h1>Posts</h1>
 
-    </header>
+</header>
 
-    
+
 <main>
 <ul class="posts">
     
@@ -209,13 +213,14 @@
 </main>
 
 
-    <footer>
-        
-        <nav>
-            <a href="/rss.xml">RSS</a><a href="/atom.xml">Atom</a>
-            <p role="doc-credit">Ella's Writing &copy; 2026 by Ella is licensed under CC BY-SA-NC 4.0</p>
-        </nav>
-    </footer>
+<footer>
+    
+    <nav>
+        <a href="/rss.xml">RSS</a><a href="/atom.xml">Atom</a>
+        <p role="doc-credit">Ella's Writing &copy; 2026 by Ella is licensed under CC BY-SA-NC 4.0</p>
+    </nav>
+</footer>
+
 </body>
 
 </html>

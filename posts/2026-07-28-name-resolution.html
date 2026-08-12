@@ -3,31 +3,34 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Name Resolution | Ella's Writing</title>
-    <meta name="viewport" content="width=device-width">
-    <link rel="stylesheet" href="/assets/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="dark light">
     <link rel="alternate" type="application/rss+xml" href="/rss.xml">
     <link rel="alternate" type="application/atom+xml" href="/atom.xml">
     
+<title>Name Resolution | Ella's Writing</title>
+
 <meta name="description" content="Processing an abstract syntax tree into a more useful format." />
+<link rel="stylesheet" href="/assets/style.css">
+
 
 </head>
 
 <body>
-    <header>
-        <nav>
-            <a href="/">Ella's Writing</a>
-            <div class="theme-container">
-                <label for="theme">Theme: </label>
-                <select id="theme" title="Light/dark mode theme toggle">
-                    <option value="Automatic">Automatic</option>
-                    <option value="Light">Light</option>
-                    <option value="Dark">Dark</option>
-                </select>
-            </div>
-            <script>
-                (() => {
+   
+<header>
+    <nav>
+        <a href="/">Ella's Writing</a>
+        <div class="theme-container">
+    <label for="theme">Theme: </label>
+    <select id="theme" title="Light/dark mode theme toggle">
+        <option value="Automatic">Automatic</option>
+        <option value="Light">Light</option>
+        <option value="Dark">Dark</option>
+    </select>
+</div>
+<script>
+    (() => {
     // enhancement to load/store, inlined to avoid flash of wrong-theme
     const el = document.getElementById("theme");
     const meta = document.querySelector("meta[name='color-scheme']");
@@ -56,15 +59,15 @@
 
     el.addEventListener("change", setTheme);
 })();
-            </script>
-        </nav>
-        
+</script>
+    </nav>
+    
 <h1>Name Resolution</h1>
 <p role="doc-subtitle">Written by Ella on <time datetime="2026-07-28">2026-07-28</time>, without AI</p>
 
-    </header>
+</header>
 
-    
+
 <main>
     <p>Now we have a syntax tree from the parser (See <a href="https://orangebacon.github.io/posts/2026-05-26-parser">Part 1</a>), we need to do something with it.  The current tree is not the easiest to work with directly for any type checking, and there are many things that could be improved.</p>
 <p>The first, and most immediately noticeable thing that could be changed is the lifetime parameters.  In the AST, we stored tokens directly from the lexer, which referred directly to the source text.  Although this helped reduce memory allocations, it has made the tree harder to store and harder to work with.  I have therefore chosen to allocate strings where required during name resolution, to remove this parameter.</p>
@@ -192,8 +195,8 @@
 </main>
 
 
-    <footer>
-        
+<footer>
+    
 <hr aria-hidden='true'/>
 <div role='doc-endnotes' aria-labelledby='notes'>
     <h2 id='notes'>Notes:</h2>
@@ -202,11 +205,12 @@
 <a role='doc-backlink' href='#fn-ref-1'>↩</a>
 </li>
 </ol></div>
-        <nav>
-            <a href="/rss.xml">RSS</a><a href="/atom.xml">Atom</a>
-            <p role="doc-credit">Ella's Writing &copy; 2026 by Ella is licensed under CC BY-SA-NC 4.0</p>
-        </nav>
-    </footer>
+    <nav>
+        <a href="/rss.xml">RSS</a><a href="/atom.xml">Atom</a>
+        <p role="doc-credit">Ella's Writing &copy; 2026 by Ella is licensed under CC BY-SA-NC 4.0</p>
+    </nav>
+</footer>
+
 </body>
 
 </html>

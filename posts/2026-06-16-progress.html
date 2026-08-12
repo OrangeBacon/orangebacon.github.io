@@ -3,31 +3,34 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Progress. | Ella's Writing</title>
-    <meta name="viewport" content="width=device-width">
-    <link rel="stylesheet" href="/assets/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="dark light">
     <link rel="alternate" type="application/rss+xml" href="/rss.xml">
     <link rel="alternate" type="application/atom+xml" href="/atom.xml">
     
+<title>Progress. | Ella's Writing</title>
+
 <meta name="description" content="Some thoughts about current events." />
+<link rel="stylesheet" href="/assets/style.css">
+
 
 </head>
 
 <body>
-    <header>
-        <nav>
-            <a href="/">Ella's Writing</a>
-            <div class="theme-container">
-                <label for="theme">Theme: </label>
-                <select id="theme" title="Light/dark mode theme toggle">
-                    <option value="Automatic">Automatic</option>
-                    <option value="Light">Light</option>
-                    <option value="Dark">Dark</option>
-                </select>
-            </div>
-            <script>
-                (() => {
+   
+<header>
+    <nav>
+        <a href="/">Ella's Writing</a>
+        <div class="theme-container">
+    <label for="theme">Theme: </label>
+    <select id="theme" title="Light/dark mode theme toggle">
+        <option value="Automatic">Automatic</option>
+        <option value="Light">Light</option>
+        <option value="Dark">Dark</option>
+    </select>
+</div>
+<script>
+    (() => {
     // enhancement to load/store, inlined to avoid flash of wrong-theme
     const el = document.getElementById("theme");
     const meta = document.querySelector("meta[name='color-scheme']");
@@ -56,15 +59,15 @@
 
     el.addEventListener("change", setTheme);
 })();
-            </script>
-        </nav>
-        
+</script>
+    </nav>
+    
 <h1>Progress.</h1>
 <p role="doc-subtitle">Written by Ella on <time datetime="2026-06-16">2026-06-16</time>, without AI</p>
 
-    </header>
+</header>
 
-    
+
 <main>
     <p>The UK is currently trying to implement laws requiring age verification, for the purposes of child protection.  I wanted to write <em>something</em> about it, so here is a pile of random links/issues/thoughts.</p>
 <p>Here's a couple of short articles about the issues with this, written better than I could manage:</p>
@@ -109,8 +112,8 @@
 </main>
 
 
-    <footer>
-        
+<footer>
+    
 
 <hr aria-hidden='true'/>
 <div role='doc-endnotes' aria-labelledby='notes'>
@@ -120,11 +123,12 @@
 <a role='doc-backlink' href='#fn-ref-1'>↩</a>
 </li>
 </ol></div>
-        <nav>
-            <a href="/rss.xml">RSS</a><a href="/atom.xml">Atom</a>
-            <p role="doc-credit">Ella's Writing &copy; 2026 by Ella is licensed under CC BY-SA-NC 4.0</p>
-        </nav>
-    </footer>
+    <nav>
+        <a href="/rss.xml">RSS</a><a href="/atom.xml">Atom</a>
+        <p role="doc-credit">Ella's Writing &copy; 2026 by Ella is licensed under CC BY-SA-NC 4.0</p>
+    </nav>
+</footer>
+
 </body>
 
 </html>

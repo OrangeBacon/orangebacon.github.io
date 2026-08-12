@@ -3,31 +3,34 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Pages workflow | Ella's Writing</title>
-    <meta name="viewport" content="width=device-width">
-    <link rel="stylesheet" href="/assets/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="dark light">
     <link rel="alternate" type="application/rss+xml" href="/rss.xml">
     <link rel="alternate" type="application/atom+xml" href="/atom.xml">
     
+<title>Pages workflow | Ella's Writing</title>
+
 <meta name="description" content="A quick look at how I publish this website." />
+<link rel="stylesheet" href="/assets/style.css">
+
 
 </head>
 
 <body>
-    <header>
-        <nav>
-            <a href="/">Ella's Writing</a>
-            <div class="theme-container">
-                <label for="theme">Theme: </label>
-                <select id="theme" title="Light/dark mode theme toggle">
-                    <option value="Automatic">Automatic</option>
-                    <option value="Light">Light</option>
-                    <option value="Dark">Dark</option>
-                </select>
-            </div>
-            <script>
-                (() => {
+   
+<header>
+    <nav>
+        <a href="/">Ella's Writing</a>
+        <div class="theme-container">
+    <label for="theme">Theme: </label>
+    <select id="theme" title="Light/dark mode theme toggle">
+        <option value="Automatic">Automatic</option>
+        <option value="Light">Light</option>
+        <option value="Dark">Dark</option>
+    </select>
+</div>
+<script>
+    (() => {
     // enhancement to load/store, inlined to avoid flash of wrong-theme
     const el = document.getElementById("theme");
     const meta = document.querySelector("meta[name='color-scheme']");
@@ -56,15 +59,15 @@
 
     el.addEventListener("change", setTheme);
 })();
-            </script>
-        </nav>
-        
+</script>
+    </nav>
+    
 <h1>Pages workflow</h1>
 <p role="doc-subtitle">Written by Ella on <time datetime="2026-04-29">2026-04-29</time>, without AI</p>
 
-    </header>
+</header>
 
-    
+
 <main>
     <p>A quick look at how I publish this website.</p>
 <h2>Hosting and Publishing</h2>
@@ -104,8 +107,8 @@ Same as 2, but uses the root of the <code>gh-pages</code> branch.</p>
 </main>
 
 
-    <footer>
-        
+<footer>
+    
 <hr aria-hidden='true'/>
 <div role='doc-endnotes' aria-labelledby='notes'>
     <h2 id='notes'>Notes:</h2>
@@ -114,11 +117,12 @@ Same as 2, but uses the root of the <code>gh-pages</code> branch.</p>
 <a role='doc-backlink' href='#fn-ref-1'>↩</a>
 </li>
 </ol></div>
-        <nav>
-            <a href="/rss.xml">RSS</a><a href="/atom.xml">Atom</a>
-            <p role="doc-credit">Ella's Writing &copy; 2026 by Ella is licensed under CC BY-SA-NC 4.0</p>
-        </nav>
-    </footer>
+    <nav>
+        <a href="/rss.xml">RSS</a><a href="/atom.xml">Atom</a>
+        <p role="doc-credit">Ella's Writing &copy; 2026 by Ella is licensed under CC BY-SA-NC 4.0</p>
+    </nav>
+</footer>
+
 </body>
 
 </html>

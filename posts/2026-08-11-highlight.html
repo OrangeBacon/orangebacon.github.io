@@ -3,31 +3,34 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Syntax Highlighting | Ella's Writing</title>
-    <meta name="viewport" content="width=device-width">
-    <link rel="stylesheet" href="/assets/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="dark light">
     <link rel="alternate" type="application/rss+xml" href="/rss.xml">
     <link rel="alternate" type="application/atom+xml" href="/atom.xml">
     
+<title>Syntax Highlighting | Ella's Writing</title>
+
 <meta name="description" content="Putting more effort than is reasonable into syntax highlighting" />
+<link rel="stylesheet" href="/assets/style.css">
+
 
 </head>
 
 <body>
-    <header>
-        <nav>
-            <a href="/">Ella's Writing</a>
-            <div class="theme-container">
-                <label for="theme">Theme: </label>
-                <select id="theme" title="Light/dark mode theme toggle">
-                    <option value="Automatic">Automatic</option>
-                    <option value="Light">Light</option>
-                    <option value="Dark">Dark</option>
-                </select>
-            </div>
-            <script>
-                (() => {
+   
+<header>
+    <nav>
+        <a href="/">Ella's Writing</a>
+        <div class="theme-container">
+    <label for="theme">Theme: </label>
+    <select id="theme" title="Light/dark mode theme toggle">
+        <option value="Automatic">Automatic</option>
+        <option value="Light">Light</option>
+        <option value="Dark">Dark</option>
+    </select>
+</div>
+<script>
+    (() => {
     // enhancement to load/store, inlined to avoid flash of wrong-theme
     const el = document.getElementById("theme");
     const meta = document.querySelector("meta[name='color-scheme']");
@@ -56,15 +59,15 @@
 
     el.addEventListener("change", setTheme);
 })();
-            </script>
-        </nav>
-        
+</script>
+    </nav>
+    
 <h1>Syntax Highlighting</h1>
 <p role="doc-subtitle">Written by Ella on <time datetime="2026-08-11">2026-08-11</time>, without AI</p>
 
-    </header>
+</header>
 
-    
+
 <main>
     <p>for some reason, i want good syntax highlighting on this website.  however, i am not especially happy with all the pre-existing solutions.  therefore, i want to implement my own syntax highlighter!  <del>one thats perfect and does everything ever and might even be the best ever</del> not really, i'll implement one that is only useful for this website in particular, and add features over time as needed.</p>
 <h2>problems with the existing</h2>
@@ -191,8 +194,8 @@
 </main>
 
 
-    <footer>
-        
+<footer>
+    
 <hr aria-hidden='true'/>
 <div role='doc-endnotes' aria-labelledby='notes'>
     <h2 id='notes'>Notes:</h2>
@@ -201,11 +204,12 @@
 <a role='doc-backlink' href='#fn-ref-1'>↩</a>
 </li>
 </ol></div>
-        <nav>
-            <a href="/rss.xml">RSS</a><a href="/atom.xml">Atom</a>
-            <p role="doc-credit">Ella's Writing &copy; 2026 by Ella is licensed under CC BY-SA-NC 4.0</p>
-        </nav>
-    </footer>
+    <nav>
+        <a href="/rss.xml">RSS</a><a href="/atom.xml">Atom</a>
+        <p role="doc-credit">Ella's Writing &copy; 2026 by Ella is licensed under CC BY-SA-NC 4.0</p>
+    </nav>
+</footer>
+
 </body>
 
 </html>
