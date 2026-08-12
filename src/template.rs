@@ -29,10 +29,15 @@ pub struct TemplateHandler;
 
 impl FileHandler for TemplateHandler {
     fn matches(&self, path: &Path) -> bool {
-        let mut components = path.components();
+        let components: Vec<_> = path.components().collect();
 
-        if let Some(Component::Normal(filter_dir)) = components.nth(1)
+        if let &[.., Component::Normal(filter_dir), _] = components.as_slice()
             && filter_dir == "templates"
+        {
+            return true;
+        }
+        if let &[.., Component::Normal(name)] = components.as_slice()
+            && name.to_str().is_some_and(|n| n.contains("tmpl"))
         {
             return true;
         }
