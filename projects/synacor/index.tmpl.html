@@ -1,0 +1,14 @@
+{% extends "./templates/blank.html" %}
+
+{% block blank_head %}
+<script src="/projects/synacor/synacor.js"></script>
+<link rel="stylesheet" href="/projects/synacor/style.css">
+{% endblock %}
+
+{% block blank_body %}
+<pre id="terminal"></pre>
+<form>
+    <input id="input">
+    <button id="submit">Enter</button>
+</form>
+{% endblock %}

@@ -63,7 +63,11 @@ impl FileHandler for TemplateHandler {
 /// Helper to remove the file extension from a path
 fn remove_extension(path: String) -> String {
     let mut buf = Path::new(&path).to_path_buf();
-    buf.set_extension("");
+    if buf.file_stem().is_some_and(|s| s == "index") {
+        buf.pop();
+    } else {
+        buf.set_extension("");
+    }
 
     buf.to_string_lossy().to_string()
 }
