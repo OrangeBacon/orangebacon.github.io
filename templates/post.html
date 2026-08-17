@@ -13,9 +13,9 @@
 {% endblock %}
 
 {% block body %}
-<main>
-    {{ content }}
+<main>{% autoescape false %}
+    {{ content }}{% endautoescape %}
 </main>
 {% endblock %}
 
-{% block footer %}{{footnotes}}{% endblock %}
+{% block footer %}{% autoescape false %}{{footnotes}}{% endautoescape %}{% endblock %}

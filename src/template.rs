@@ -14,11 +14,12 @@ use crate::{
 
 pub static ENVIRONMENT: LazyLock<Mutex<Environment<'static>>> = LazyLock::new(|| {
     let mut env = Environment::new();
-    env.set_auto_escape_callback(|_| minijinja::AutoEscape::None);
+    env.set_auto_escape_callback(|_| minijinja::AutoEscape::Html);
     env.add_filter("remove_extension", remove_extension);
     env.add_filter("remove_dot_slash", remove_dot_slash);
     env.add_filter("date_to_rss", date_to_rss);
     env.add_filter("date_to_rfc3339", date_to_rfc3339);
+    env.add_function("file", file);
     Mutex::new(env)
 });
 
@@ -93,4 +94,9 @@ fn date_to_rfc3339(date: String) -> String {
         .unwrap()
         .strftime("%Y-%m-%dT00:00:00Z")
         .to_string()
+}
+
+/// Read a file from within a template
+fn file(path: String) -> String {
+    std::fs::read_to_string(path).unwrap()
 }
