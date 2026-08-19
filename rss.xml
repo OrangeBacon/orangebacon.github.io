@@ -9,112 +9,112 @@
     <copyright>Ella's Writing &#169; 2026 by Ella is licensed under CC BY-SA-NC 4.0</copyright>
     <docs>https://www.rssboard.org/rss-specification</docs>
     <language>en-GB</language>
-    <lastBuildDate>Thu, 13 Aug 2026 00:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Wed, 19 Aug 2026 00:00:00 GMT</lastBuildDate>
     <dc:creator>Ella Moreton</dc:creator>
     <atom:link href="https://orangebacon.github.io/rss.xml" rel="self" type="application/rss+xml" />
 
     <item>
       <description>My implementation of the Synacor OSCON 2012 Challenge</description>
-      <link>https://orangebacon.github.io/projects/synacor</link>
-      <guid isPermaLink="true">https://orangebacon.github.io/projects/synacor</guid>
+      <link>https://orangebacon.github.io/projects&#x2f;synacor</link>
+      <guid isPermaLink="true">https://orangebacon.github.io/projects&#x2f;synacor</guid>
       <pubDate>Wed, 12 Aug 2026 00:00:00 GMT</pubDate>
       <title>Synacor Challenge</title>
     </item>
     <item>
       <description>Putting more effort than is reasonable into syntax highlighting</description>
-      <link>https://orangebacon.github.io/posts/2026-08-11-highlight</link>
-      <guid isPermaLink="true">https://orangebacon.github.io/posts/2026-08-11-highlight</guid>
+      <link>https://orangebacon.github.io/posts&#x2f;2026-08-11-highlight</link>
+      <guid isPermaLink="true">https://orangebacon.github.io/posts&#x2f;2026-08-11-highlight</guid>
       <pubDate>Tue, 11 Aug 2026 00:00:00 GMT</pubDate>
       <title>Syntax Highlighting</title>
     </item>
     <item>
       <description>its been another year, i guess</description>
-      <link>https://orangebacon.github.io/posts/2026-08-10-year</link>
-      <guid isPermaLink="true">https://orangebacon.github.io/posts/2026-08-10-year</guid>
+      <link>https://orangebacon.github.io/posts&#x2f;2026-08-10-year</link>
+      <guid isPermaLink="true">https://orangebacon.github.io/posts&#x2f;2026-08-10-year</guid>
       <pubDate>Mon, 10 Aug 2026 00:00:00 GMT</pubDate>
       <title>another year</title>
     </item>
     <item>
       <description>Processing an abstract syntax tree into a more useful format.</description>
-      <link>https://orangebacon.github.io/posts/2026-07-28-name-resolution</link>
-      <guid isPermaLink="true">https://orangebacon.github.io/posts/2026-07-28-name-resolution</guid>
+      <link>https://orangebacon.github.io/posts&#x2f;2026-07-28-name-resolution</link>
+      <guid isPermaLink="true">https://orangebacon.github.io/posts&#x2f;2026-07-28-name-resolution</guid>
       <pubDate>Tue, 28 Jul 2026 00:00:00 GMT</pubDate>
       <title>Name Resolution</title>
     </item>
     <item>
       <description>can&#x27;t we make them even a little faster?</description>
-      <link>https://orangebacon.github.io/posts/2026-07-17-efficiency</link>
-      <guid isPermaLink="true">https://orangebacon.github.io/posts/2026-07-17-efficiency</guid>
+      <link>https://orangebacon.github.io/posts&#x2f;2026-07-17-efficiency</link>
+      <guid isPermaLink="true">https://orangebacon.github.io/posts&#x2f;2026-07-17-efficiency</guid>
       <pubDate>Fri, 17 Jul 2026 00:00:00 GMT</pubDate>
       <title>why are computers so slow</title>
     </item>
     <item>
       <description>A few thoughts about my world views in the past</description>
-      <link>https://orangebacon.github.io/posts/2026-07-01-nostalgia</link>
-      <guid isPermaLink="true">https://orangebacon.github.io/posts/2026-07-01-nostalgia</guid>
+      <link>https://orangebacon.github.io/posts&#x2f;2026-07-01-nostalgia</link>
+      <guid isPermaLink="true">https://orangebacon.github.io/posts&#x2f;2026-07-01-nostalgia</guid>
       <pubDate>Wed, 01 Jul 2026 00:00:00 GMT</pubDate>
       <title>Nostalgia</title>
     </item>
     <item>
       <description>Some thoughts about current events.</description>
-      <link>https://orangebacon.github.io/posts/2026-06-16-progress</link>
-      <guid isPermaLink="true">https://orangebacon.github.io/posts/2026-06-16-progress</guid>
+      <link>https://orangebacon.github.io/posts&#x2f;2026-06-16-progress</link>
+      <guid isPermaLink="true">https://orangebacon.github.io/posts&#x2f;2026-06-16-progress</guid>
       <pubDate>Tue, 16 Jun 2026 00:00:00 GMT</pubDate>
       <title>Progress.</title>
     </item>
     <item>
       <description>Lets start to write this new programming language.</description>
-      <link>https://orangebacon.github.io/posts/2026-05-26-parser</link>
-      <guid isPermaLink="true">https://orangebacon.github.io/posts/2026-05-26-parser</guid>
+      <link>https://orangebacon.github.io/posts&#x2f;2026-05-26-parser</link>
+      <guid isPermaLink="true">https://orangebacon.github.io/posts&#x2f;2026-05-26-parser</guid>
       <pubDate>Tue, 26 May 2026 00:00:00 GMT</pubDate>
       <title>Writing a Programming Language</title>
     </item>
     <item>
       <description>For a long time I&#x27;ve been interested in programming language development, I want to create a new language to explore development of type systems.</description>
-      <link>https://orangebacon.github.io/posts/2026-05-13-language-design</link>
-      <guid isPermaLink="true">https://orangebacon.github.io/posts/2026-05-13-language-design</guid>
+      <link>https://orangebacon.github.io/posts&#x2f;2026-05-13-language-design</link>
+      <guid isPermaLink="true">https://orangebacon.github.io/posts&#x2f;2026-05-13-language-design</guid>
       <pubDate>Wed, 13 May 2026 00:00:00 GMT</pubDate>
       <title>Programming Language Design</title>
     </item>
     <item>
       <description>A quick look at how I publish this website.</description>
-      <link>https://orangebacon.github.io/posts/2026-04-29-git-worktree</link>
-      <guid isPermaLink="true">https://orangebacon.github.io/posts/2026-04-29-git-worktree</guid>
+      <link>https://orangebacon.github.io/posts&#x2f;2026-04-29-git-worktree</link>
+      <guid isPermaLink="true">https://orangebacon.github.io/posts&#x2f;2026-04-29-git-worktree</guid>
       <pubDate>Wed, 29 Apr 2026 00:00:00 GMT</pubDate>
       <title>Pages workflow</title>
     </item>
     <item>
       <description>I thought I would give a few opinions about some of the programming languages I have used (even if a little briefly).</description>
-      <link>https://orangebacon.github.io/posts/2026-04-21-programming-languages</link>
-      <guid isPermaLink="true">https://orangebacon.github.io/posts/2026-04-21-programming-languages</guid>
+      <link>https://orangebacon.github.io/posts&#x2f;2026-04-21-programming-languages</link>
+      <guid isPermaLink="true">https://orangebacon.github.io/posts&#x2f;2026-04-21-programming-languages</guid>
       <pubDate>Tue, 21 Apr 2026 00:00:00 GMT</pubDate>
       <title>Choosing a Programming Language</title>
     </item>
     <item>
       <description>I have done work both from home, and in the office, both have pros and cons in my opinion.</description>
-      <link>https://orangebacon.github.io/posts/2026-04-16-wfh</link>
-      <guid isPermaLink="true">https://orangebacon.github.io/posts/2026-04-16-wfh</guid>
+      <link>https://orangebacon.github.io/posts&#x2f;2026-04-16-wfh</link>
+      <guid isPermaLink="true">https://orangebacon.github.io/posts&#x2f;2026-04-16-wfh</guid>
       <pubDate>Thu, 16 Apr 2026 00:00:00 GMT</pubDate>
       <title>Working From Home</title>
     </item>
     <item>
       <description>AI is commonly used in so much recently, including AI art, programming and writing, so I thought it would be a good idea to explain my opinions on AI and the reasoning behind those opinions.  Everything in this has likely been said before, but I want to write down my opinions anyway.</description>
-      <link>https://orangebacon.github.io/posts/2026-04-09-ai</link>
-      <guid isPermaLink="true">https://orangebacon.github.io/posts/2026-04-09-ai</guid>
+      <link>https://orangebacon.github.io/posts&#x2f;2026-04-09-ai</link>
+      <guid isPermaLink="true">https://orangebacon.github.io/posts&#x2f;2026-04-09-ai</guid>
       <pubDate>Thu, 09 Apr 2026 00:00:00 GMT</pubDate>
       <title>Artificial Intelligence</title>
     </item>
     <item>
       <description>As an actual first post, I thought it would be worth writing about the code that creates this website, and my reasoning for writing the code how I have.  For anyone who is interested, the code can be found at GitHub.</description>
-      <link>https://orangebacon.github.io/posts/2026-03-24-static-site</link>
-      <guid isPermaLink="true">https://orangebacon.github.io/posts/2026-03-24-static-site</guid>
+      <link>https://orangebacon.github.io/posts&#x2f;2026-03-24-static-site</link>
+      <guid isPermaLink="true">https://orangebacon.github.io/posts&#x2f;2026-03-24-static-site</guid>
       <pubDate>Tue, 24 Mar 2026 00:00:00 GMT</pubDate>
       <title>Static Site Generator</title>
     </item>
     <item>
       <description>Hello! I&#x27;m going to try writing about pretty much anything I&#x27;m interested in, hopefully this will be a variety of things, but who knows, its not like I&#x27;ve written it yet!</description>
-      <link>https://orangebacon.github.io/posts/2026-03-23-welcome</link>
-      <guid isPermaLink="true">https://orangebacon.github.io/posts/2026-03-23-welcome</guid>
+      <link>https://orangebacon.github.io/posts&#x2f;2026-03-23-welcome</link>
+      <guid isPermaLink="true">https://orangebacon.github.io/posts&#x2f;2026-03-23-welcome</guid>
       <pubDate>Mon, 23 Mar 2026 00:00:00 GMT</pubDate>
       <title>Post #1</title>
     </item>

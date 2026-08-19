@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>urn:uuid:09715801-0eb3-46ac-90e3-1b955463bf48</id>
     <title>Ella's Writing</title>
-    <updated>2026-08-13T00:00:00Z</updated>
+    <updated>2026-08-19T00:00:00Z</updated>
     <author>
         <name>Ella</name>
         <uri>https://orangebacon.github.io/</uri>
@@ -14,93 +14,93 @@
 
     <entry>
         <summary>My implementation of the Synacor OSCON 2012 Challenge</summary>
-        <id>https://orangebacon.github.io/projects/synacor</id>
+        <id>https://orangebacon.github.io/projects&#x2f;synacor</id>
         <updated>2026-08-12T00:00:00Z</updated>
         <title>Synacor Challenge</title>
-        <link rel="alternate" href="https://orangebacon.github.io/projects/synacor" />
+        <link rel="alternate" href="https://orangebacon.github.io/projects&#x2f;synacor" />
     </entry><entry>
         <summary>Putting more effort than is reasonable into syntax highlighting</summary>
-        <id>https://orangebacon.github.io/posts/2026-08-11-highlight</id>
+        <id>https://orangebacon.github.io/posts&#x2f;2026-08-11-highlight</id>
         <updated>2026-08-11T00:00:00Z</updated>
         <title>Syntax Highlighting</title>
-        <link rel="alternate" href="https://orangebacon.github.io/posts/2026-08-11-highlight" />
+        <link rel="alternate" href="https://orangebacon.github.io/posts&#x2f;2026-08-11-highlight" />
     </entry><entry>
         <summary>its been another year, i guess</summary>
-        <id>https://orangebacon.github.io/posts/2026-08-10-year</id>
+        <id>https://orangebacon.github.io/posts&#x2f;2026-08-10-year</id>
         <updated>2026-08-10T00:00:00Z</updated>
         <title>another year</title>
-        <link rel="alternate" href="https://orangebacon.github.io/posts/2026-08-10-year" />
+        <link rel="alternate" href="https://orangebacon.github.io/posts&#x2f;2026-08-10-year" />
     </entry><entry>
         <summary>Processing an abstract syntax tree into a more useful format.</summary>
-        <id>https://orangebacon.github.io/posts/2026-07-28-name-resolution</id>
+        <id>https://orangebacon.github.io/posts&#x2f;2026-07-28-name-resolution</id>
         <updated>2026-07-28T00:00:00Z</updated>
         <title>Name Resolution</title>
-        <link rel="alternate" href="https://orangebacon.github.io/posts/2026-07-28-name-resolution" />
+        <link rel="alternate" href="https://orangebacon.github.io/posts&#x2f;2026-07-28-name-resolution" />
     </entry><entry>
         <summary>can&#x27;t we make them even a little faster?</summary>
-        <id>https://orangebacon.github.io/posts/2026-07-17-efficiency</id>
+        <id>https://orangebacon.github.io/posts&#x2f;2026-07-17-efficiency</id>
         <updated>2026-07-17T00:00:00Z</updated>
         <title>why are computers so slow</title>
-        <link rel="alternate" href="https://orangebacon.github.io/posts/2026-07-17-efficiency" />
+        <link rel="alternate" href="https://orangebacon.github.io/posts&#x2f;2026-07-17-efficiency" />
     </entry><entry>
         <summary>A few thoughts about my world views in the past</summary>
-        <id>https://orangebacon.github.io/posts/2026-07-01-nostalgia</id>
+        <id>https://orangebacon.github.io/posts&#x2f;2026-07-01-nostalgia</id>
         <updated>2026-07-01T00:00:00Z</updated>
         <title>Nostalgia</title>
-        <link rel="alternate" href="https://orangebacon.github.io/posts/2026-07-01-nostalgia" />
+        <link rel="alternate" href="https://orangebacon.github.io/posts&#x2f;2026-07-01-nostalgia" />
     </entry><entry>
         <summary>Some thoughts about current events.</summary>
-        <id>https://orangebacon.github.io/posts/2026-06-16-progress</id>
+        <id>https://orangebacon.github.io/posts&#x2f;2026-06-16-progress</id>
         <updated>2026-06-16T00:00:00Z</updated>
         <title>Progress.</title>
-        <link rel="alternate" href="https://orangebacon.github.io/posts/2026-06-16-progress" />
+        <link rel="alternate" href="https://orangebacon.github.io/posts&#x2f;2026-06-16-progress" />
     </entry><entry>
         <summary>Lets start to write this new programming language.</summary>
-        <id>https://orangebacon.github.io/posts/2026-05-26-parser</id>
+        <id>https://orangebacon.github.io/posts&#x2f;2026-05-26-parser</id>
         <updated>2026-05-26T00:00:00Z</updated>
         <title>Writing a Programming Language</title>
-        <link rel="alternate" href="https://orangebacon.github.io/posts/2026-05-26-parser" />
+        <link rel="alternate" href="https://orangebacon.github.io/posts&#x2f;2026-05-26-parser" />
     </entry><entry>
         <summary>For a long time I&#x27;ve been interested in programming language development, I want to create a new language to explore development of type systems.</summary>
-        <id>https://orangebacon.github.io/posts/2026-05-13-language-design</id>
+        <id>https://orangebacon.github.io/posts&#x2f;2026-05-13-language-design</id>
         <updated>2026-05-13T00:00:00Z</updated>
         <title>Programming Language Design</title>
-        <link rel="alternate" href="https://orangebacon.github.io/posts/2026-05-13-language-design" />
+        <link rel="alternate" href="https://orangebacon.github.io/posts&#x2f;2026-05-13-language-design" />
     </entry><entry>
         <summary>A quick look at how I publish this website.</summary>
-        <id>https://orangebacon.github.io/posts/2026-04-29-git-worktree</id>
+        <id>https://orangebacon.github.io/posts&#x2f;2026-04-29-git-worktree</id>
         <updated>2026-04-29T00:00:00Z</updated>
         <title>Pages workflow</title>
-        <link rel="alternate" href="https://orangebacon.github.io/posts/2026-04-29-git-worktree" />
+        <link rel="alternate" href="https://orangebacon.github.io/posts&#x2f;2026-04-29-git-worktree" />
     </entry><entry>
         <summary>I thought I would give a few opinions about some of the programming languages I have used (even if a little briefly).</summary>
-        <id>https://orangebacon.github.io/posts/2026-04-21-programming-languages</id>
+        <id>https://orangebacon.github.io/posts&#x2f;2026-04-21-programming-languages</id>
         <updated>2026-04-21T00:00:00Z</updated>
         <title>Choosing a Programming Language</title>
-        <link rel="alternate" href="https://orangebacon.github.io/posts/2026-04-21-programming-languages" />
+        <link rel="alternate" href="https://orangebacon.github.io/posts&#x2f;2026-04-21-programming-languages" />
     </entry><entry>
         <summary>I have done work both from home, and in the office, both have pros and cons in my opinion.</summary>
-        <id>https://orangebacon.github.io/posts/2026-04-16-wfh</id>
+        <id>https://orangebacon.github.io/posts&#x2f;2026-04-16-wfh</id>
         <updated>2026-04-16T00:00:00Z</updated>
         <title>Working From Home</title>
-        <link rel="alternate" href="https://orangebacon.github.io/posts/2026-04-16-wfh" />
+        <link rel="alternate" href="https://orangebacon.github.io/posts&#x2f;2026-04-16-wfh" />
     </entry><entry>
         <summary>AI is commonly used in so much recently, including AI art, programming and writing, so I thought it would be a good idea to explain my opinions on AI and the reasoning behind those opinions.  Everything in this has likely been said before, but I want to write down my opinions anyway.</summary>
-        <id>https://orangebacon.github.io/posts/2026-04-09-ai</id>
+        <id>https://orangebacon.github.io/posts&#x2f;2026-04-09-ai</id>
         <updated>2026-04-09T00:00:00Z</updated>
         <title>Artificial Intelligence</title>
-        <link rel="alternate" href="https://orangebacon.github.io/posts/2026-04-09-ai" />
+        <link rel="alternate" href="https://orangebacon.github.io/posts&#x2f;2026-04-09-ai" />
     </entry><entry>
         <summary>As an actual first post, I thought it would be worth writing about the code that creates this website, and my reasoning for writing the code how I have.  For anyone who is interested, the code can be found at GitHub.</summary>
-        <id>https://orangebacon.github.io/posts/2026-03-24-static-site</id>
+        <id>https://orangebacon.github.io/posts&#x2f;2026-03-24-static-site</id>
         <updated>2026-03-24T00:00:00Z</updated>
         <title>Static Site Generator</title>
-        <link rel="alternate" href="https://orangebacon.github.io/posts/2026-03-24-static-site" />
+        <link rel="alternate" href="https://orangebacon.github.io/posts&#x2f;2026-03-24-static-site" />
     </entry><entry>
         <summary>Hello! I&#x27;m going to try writing about pretty much anything I&#x27;m interested in, hopefully this will be a variety of things, but who knows, its not like I&#x27;ve written it yet!</summary>
-        <id>https://orangebacon.github.io/posts/2026-03-23-welcome</id>
+        <id>https://orangebacon.github.io/posts&#x2f;2026-03-23-welcome</id>
         <updated>2026-03-23T00:00:00Z</updated>
         <title>Post #1</title>
-        <link rel="alternate" href="https://orangebacon.github.io/posts/2026-03-23-welcome" />
+        <link rel="alternate" href="https://orangebacon.github.io/posts&#x2f;2026-03-23-welcome" />
     </entry>
 </feed>
