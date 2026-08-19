@@ -1,14 +1,54 @@
 {% extends "./templates/blank.html" %}
 
 {% block blank_head %}
-<script src="/projects/synacor/synacor.js"></script>
+<script src="/projects/synacor/synacor.js" defer></script>
 <link rel="stylesheet" href="/projects/synacor/style.css">
 {% endblock %}
 
 {% block blank_body %}
-<pre id="terminal"></pre>
-<form>
-    <input id="input">
-    <button id="submit">Enter</button>
-</form>
+<nav>
+    <h1>Synacor Challenge</h1>
+    <button id="intro" class="open">Introduction</button>
+    <button id="codes">Solutions</button>
+    <button id="input">Input</button>
+    <button id="output">Output</button>
+</nav>
+
+<section class="intro open">
+    <h2>Introduction</h2>
+    <noscript>
+        Looking at the other tabs requires JavaScript. The description of the
+        challenge is still visible below.
+        <br>
+        The other tabs include:
+        <ul>
+            <li>Checking whether you have solved a problem</li>
+            <li>Input to an implementation of the specification</li>
+            <li>Output and debugging tools</li>
+        </ul>
+    </noscript>
+    <p>
+        Information about the challenge all came from
+        <a href="https://github.com/Aneurysm9/vm_challenge/tree/main">this github repository</a>
+    </p>
+    <pre>{{ file('./projects/synacor/arch-spec.txt') | escape }}</pre>
+</section>
+
+<section class="codes">
+    <h2>Codes</h2>
+</section>
+
+<section class="input">
+    <h2>Disassembly</h2>
+    <pre id="disassembly"></pre>
+</section>
+
+<section class="output">
+    <h2>Terminal</h2>
+    <pre id="terminal"></pre>
+    <form>
+        <input id="term_input">
+        <button id="submit">Enter</button>
+    </form>
+</section>
 {% endblock %}

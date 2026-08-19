@@ -1,224 +1,422 @@
-(async () => {
-    const file = await fetch("/projects/synacor/challenge.bin");
-    const buf = await file.arrayBuffer();
-    const data = new DataView(buf);
+'use strict';
 
-    const terminal = document.getElementById("terminal");
+// -----------------
+// Utilities
+// -----------------
 
-    // memory contains the heap, with the registers appended to the end
-    const memory = Array(0x7FFFF + 8).fill(0);
-    const stack = [];
+// awaitable yield for long-running tasks
+function yieldToMain() {
+    if (globalThis.scheduler?.yield) {
+        return scheduler.yield();
+    }
 
-    for (let i = 0; i < data.byteLength; i += 2) {
-        memory[i / 2] = data.getUint16(i, true);
+    // Fall back to yielding with setTimeout.
+    return new Promise(resolve => {
+        setTimeout(resolve, 0);
+    });
+}
+
+// -----------------
+// Global UI
+// -----------------
+(() => {
+    const tabs = [...document.querySelectorAll("body section")];
+    const buttons = [...document.querySelectorAll("nav button")];
+    let current = 0;
+
+    for (let i = 0; i < buttons.length; i++) {
+        const button = buttons[i];
+        button.addEventListener('keydown', onKeydown);
+        button.addEventListener('click', onClick);
+        if (button.classList.contains("open")) {
+            current = i;
+        }
+    }
+
+    setTab(current, false);
+
+    function onKeydown(e) {
+        let target = event.currentTarget;
+        let handled = false;
+
+        switch (event.key) {
+            case 'ArrowLeft':
+                setTab(current - 1, true);
+                handled = true;
+                break;
+
+            case 'ArrowRight':
+                setTab(current + 1, true);
+                handled = true;
+                break;
+
+            case 'Home':
+                setTab(0, true);
+                handled = true;
+                break;
+
+            case 'End':
+                setTab(tabs.length - 1, true);
+                handled = true;
+                break;
+
+            default:
+                break;
+        }
+
+        if (handled) {
+            e.stopPropagation();
+            e.preventDefault();
+        }
+    }
+
+    function onClick(e) {
+        setTab(e.currentTarget, true)
+    }
+
+    function setTab(set, focus) {
+        const len = buttons.length;
+
+        let test = set;
+        if (typeof test == "number") {
+            // wrap to within the number of buttons
+            test = ((set % len) + len) % len;
+        }
+
+        for (let i = 0; i < len; i++) {
+            const button = buttons[i];
+            const tab = tabs[i];
+
+            if (button == test || i == test) {
+                button.classList.add("open");
+                tab?.classList.add("open");
+                current = i;
+                if (focus) {
+                    button.focus();
+                }
+            } else {
+                button.classList.remove("open");
+                tab?.classList.remove("open");
+            }
+        }
+    }
+})();
+
+// -----------------
+// Interpreter
+// -----------------
+class Interpreter {
+    memory = new Uint16Array(2 ** 15);
+    registers = new Uint16Array(8);
+    stack = [];
+    ip = 0;
+
+    // create a blank intepreter
+    constructor() { }
+
+    // load a binary source file into the interpreter
+    load_file(binary) {
+        const data = new DataView(binary);
+
+        for (let i = 0; i < data.byteLength; i += 2) {
+            this.memory[i / 2] = data.getUint16(i, true);
+        }
+    }
+
+    #input = [];
+    // add input text to the interpreter
+    set input(value) {
+        let inp = value.split('');
+        inp.reverse();
+        this.#input = this.#input.concat(inp);
+    }
+
+    #output = [];
+    // get any new output text since last time it was checked
+    get output() {
+        let out = this.#output.join('');
+        this.#output = [];
+        return out;
     }
 
     // read from a memory index
-    function read(idx) {
-        return memory[idx % (2 ** 15)]
+    #read(idx) {
+        return this.memory[idx % (2 ** 15)]
     }
 
-    // get a number value
-    function number(num) {
+    // get a number or a register value
+    #number(num) {
         if (num >= 2 ** 15) {
-            return memory[num];
+            return this.registers[num - (2 ** 15)];
         } else {
             return num;
         }
     }
 
-    function yieldToMain() {
-        if (globalThis.scheduler?.yield) {
-            return scheduler.yield();
+    // write to memory or register
+    #write(addr, value) {
+        if (addr >= 2 ** 15) {
+            this.registers[addr - (2 ** 15)] = value % (2 ** 15);
+        } else {
+            this.memory[addr] = value % (2 ** 15);
         }
-
-        // Fall back to yielding with setTimeout.
-        return new Promise(resolve => {
-            setTimeout(resolve, 0);
-        });
     }
 
-    async function* interpret() {
-        let input = [];
-        let ip = 0;
-
+    *interpret() {
         let lastYield = performance.now();
 
         while (true) {
             if (performance.now() - lastYield > 50) {
-                await yieldToMain();
+                yield "loop";
                 lastYield = performance.now();
             }
 
-            let op = read(ip);
+            let op = this.#read(this.ip);
             switch (op) {
                 // halt
                 case 0:
-                    ip += 1;
-                    return;
+                    this.ip += 1;
+                    yield "halt";
+                    break;
 
                 // set a b
                 case 1:
-                    memory[read(ip + 1)] = number(read(ip + 2));
-                    ip += 3;
+                    this.#write(this.#read(this.ip + 1), this.#number(this.#read(this.ip + 2)));
+                    this.ip += 3;
                     break;
 
                 // push a
                 case 2:
-                    stack.push(number(read(ip + 1)));
-                    ip += 2;
+                    this.stack.push(this.#number(this.#read(this.ip + 1)));
+                    this.ip += 2;
                     break;
 
                 // pop a
                 case 3:
-                    const pop = stack.pop();
+                    const pop = this.stack.pop();
                     if (pop == undefined) {
-                        console.error("Stack pop");
+                        yield "stack_pop";
+                        break;
                     }
-                    memory[read(ip + 1)] = pop;
-                    ip += 2;
+                    this.#write(this.#read(this.ip + 1), pop);
+                    this.ip += 2;
                     break;
 
                 // eq a b c
                 case 4:
-                    if (number(read(ip + 2)) == number(read(ip + 3))) {
-                        memory[read(ip + 1)] = 1;
+                    if (this.#number(this.#read(this.ip + 2)) == this.#number(this.#read(this.ip + 3))) {
+                        this.#write(this.#read(this.ip + 1), 1);
                     } else {
-                        memory[read(ip + 1)] = 0;
+                        this.#write(this.#read(this.ip + 1), 0);
                     }
-                    ip += 4;
+                    this.ip += 4;
                     break;
 
                 // gt a b c
                 case 5:
-                    if (number(read(ip + 2)) > number(read(ip + 3))) {
-                        memory[read(ip + 1)] = 1;
+                    if (this.#number(this.#read(this.ip + 2)) > this.#number(this.#read(this.ip + 3))) {
+                        this.#write(this.#read(this.ip + 1), 1);
                     } else {
-                        memory[read(ip + 1)] = 0;
+                        this.#write(this.#read(this.ip + 1), 0);
                     }
-                    ip += 4;
+                    this.ip += 4;
                     break;
 
                 // jump a
                 case 6:
-                    ip = number(read(ip + 1));
+                    this.ip = this.#number(this.#read(this.ip + 1));
                     break;
 
                 // jt a b
                 case 7:
-                    if (number(read(ip + 1)) != 0) {
-                        ip = number(read(ip + 2))
+                    if (this.#number(this.#read(this.ip + 1)) != 0) {
+                        this.ip = this.#number(this.#read(this.ip + 2))
                     } else {
-                        ip += 3;
+                        this.ip += 3;
                     }
                     break;
 
                 // jf a b
                 case 8:
-                    if (number(read(ip + 1)) == 0) {
-                        ip = number(read(ip + 2))
+                    if (this.#number(this.#read(this.ip + 1)) == 0) {
+                        this.ip = this.#number(this.#read(this.ip + 2))
                     } else {
-                        ip += 3;
+                        this.ip += 3;
                     }
                     break;
 
                 // add a b c
                 case 9:
-                    memory[read(ip + 1)] = (number(read(ip + 2)) + number(read(ip + 3))) % (2 ** 15);
-                    ip += 4;
+                    this.#write(this.#read(this.ip + 1), this.#number(this.#read(this.ip + 2)) + this.#number(this.#read(this.ip + 3)));
+                    this.ip += 4;
                     break;
 
                 // mult a b c
                 case 10:
-                    memory[read(ip + 1)] = (number(read(ip + 2)) * number(read(ip + 3))) % (2 ** 15);
-                    ip += 4;
+                    this.#write(this.#read(this.ip + 1), this.#number(this.#read(this.ip + 2)) * this.#number(this.#read(this.ip + 3)));
+                    this.ip += 4;
                     break;
 
                 // mod a b c
                 case 11:
-                    memory[read(ip + 1)] = (number(read(ip + 2)) % number(read(ip + 3))) % (2 ** 15);
-                    ip += 4;
+                    this.#write(this.#read(this.ip + 1), this.#number(this.#read(this.ip + 2)) % this.#number(this.#read(this.ip + 3)));
+                    this.ip += 4;
                     break;
 
                 // and a b c
                 case 12:
-                    memory[read(ip + 1)] = (number(read(ip + 2)) & number(read(ip + 3))) % (2 ** 15);
-                    ip += 4;
+                    this.#write(this.#read(this.ip + 1), this.#number(this.#read(this.ip + 2)) & this.#number(this.#read(this.ip + 3)));
+                    this.ip += 4;
                     break;
 
                 // or a b c
                 case 13:
-                    memory[read(ip + 1)] = (number(read(ip + 2)) | number(read(ip + 3))) % (2 ** 15);
-                    ip += 4;
+                    this.#write(this.#read(this.ip + 1), this.#number(this.#read(this.ip + 2)) | this.#number(this.#read(this.ip + 3)));
+                    this.ip += 4;
                     break;
 
                 // not a b
                 case 14:
-                    memory[read(ip + 1)] = (~number(read(ip + 2)) & 0x7FFF) % (2 ** 15);
-                    ip += 3;
+                    this.#write(this.#read(this.ip + 1), ~this.#number(this.#read(this.ip + 2)) & 0x7FFF);
+                    this.ip += 3;
                     break;
 
                 // rmem a b
                 case 15:
-                    memory[read(ip + 1)] = memory[number(read(ip + 2))];
-                    ip += 3;
+                    this.#write(this.#read(this.ip + 1), this.#read(this.#number(this.#read(this.ip + 2))));
+                    this.ip += 3;
                     break;
 
                 // wmem a b
                 case 16:
-                    memory[number(read(ip + 1))] = number(read(ip + 2));
-                    ip += 3;
+                    this.#write(this.#number(this.#read(this.ip + 1)), this.#number(this.#read(this.ip + 2)));
+                    this.ip += 3;
                     break;
 
                 // call a
                 case 17:
-                    const a = number(read(ip + 1));
-                    ip += 2;
-                    stack.push(ip);
-                    ip = a;
+                    const a = this.#number(this.#read(this.ip + 1));
+                    this.ip += 2;
+                    this.stack.push(this.ip);
+                    this.ip = a;
                     break;
 
                 // ret
                 case 18:
-                    const ret_pop = stack.pop();
+                    const ret_pop = this.stack.pop();
                     if (ret_pop == undefined) {
-                        console.error("Stack ret");
+                        yield "stack_ret";
+                        break;
                     }
-                    ip = ret_pop;
+                    this.ip = ret_pop;
                     break;
 
                 // out a
                 case 19:
-                    const ch = String.fromCharCode(number(read(ip + 1)));
-                    terminal.innerText += ch;
-                    ip += 2;
+                    const ch = String.fromCharCode(this.#number(this.#read(this.ip + 1)));
+                    this.#output.push(ch);
+                    if (ch == "\n") {
+                        yield "line";
+                    }
+                    this.ip += 2;
                     break;
 
                 // in a
                 case 20:
-                    if (input.length == 0) {
-                        input = (yield).split('');
+                    if (this.#input.length == 0) {
+                        yield "input";
+                        break;
                     }
-                    memory[read(ip + 1)] = input.shift().charCodeAt(0);
-                    ip += 2;
+                    this.#write(this.#read(this.ip + 1), this.#input.pop().charCodeAt(0));
+                    this.ip += 2;
                     break;
 
                 // noop
                 case 21:
-                    ip += 1;
+                    this.ip += 1;
                     break;
 
                 // error
                 default:
-                    console.error("Unknown instr: %i", op)
-                    return;
+                    yield "unknown";
+                    break;
             }
         }
     }
 
-    const interp = interpret();
-    interp.next();
-    const input = `take tablet
+    disassemble(idx) {
+        let disassembly = [];
+
+        while (idx < this.memory.length) {
+            let op = this.#read(idx);
+
+            const ops = [
+                ["halt", 0],
+                ["set", 2],
+                ["push", 1],
+                ["pop", 1],
+                ["eq", 3],
+                ["gt", 3],
+                ["jmp", 1],
+                ["jt", 2],
+                ["jf", 2],
+                ["add", 3],
+                ["mult", 3],
+                ["mod", 3],
+                ["and", 3],
+                ["or", 3],
+                ["not", 2],
+                ["rmem", 2],
+                ["wmem", 2],
+                ["call", 1],
+                ["ret", 0],
+                ["out", 1],
+                ["in", 1],
+                ["noop", 0],
+            ];
+
+            const decoded = ops[op];
+            const last = disassembly[disassembly.length - 1];
+            if (last?.startsWith("out") && decoded?.[0] == "out") {
+                let arg = this.#read(idx + 1);
+                disassembly[disassembly.length - 1] = last.concat(String.fromCharCode(arg));
+                idx += 2;
+            } else if (last?.startsWith("equ") && !decoded) {
+                disassembly[disassembly.length - 1] = last.concat(String.fromCharCode(op));
+                idx += 1;
+            } else if (decoded) {
+                let args = [decoded[0]];
+                for (let i = 0; i < decoded[1]; i++) {
+                    const val = this.#read(idx + i + 1);
+                    if (val >= 2 ** 15) {
+                        args.push(`r${val - (2 ** 15)}`);
+                    } else if (decoded[0] == "out") {
+                        args.push(String.fromCharCode(val));
+                    } else {
+                        args.push(val.toString());
+                    }
+                }
+
+                disassembly.push(args.join(' '));
+                idx += decoded[1] + 1;
+
+            } else {
+                disassembly.push(`equ ${String.fromCharCode(op)}`);
+                idx += 1;
+            }
+        }
+
+        return disassembly.join('\n');
+    }
+}
+
+(async () => {
+    const file = await fetch("/projects/synacor/challenge.bin");
+    const buf = await file.arrayBuffer();
+
+    const interp = new Interpreter();
+    interp.load_file(buf);
+    interp.input = `take tablet
 use tablet
 go doorway
 go north
@@ -269,22 +467,47 @@ use corroded coin
 go north
 take teleporter
 use teleporter
-look strange book`;
+look strange book\n`;
 
-    const input_el = document.getElementById("input");
+    const input_el = document.getElementById("term_input");
     const submit_el = document.getElementById("submit");
+    const terminal = document.getElementById("terminal");
+    const disassembly = document.getElementById("disassembly");
 
-    for (const line of input.split('\n')) {
-        await interp.next(line + '\n');
-        input_el.focus();
-        input_el.scrollIntoView();
+    const run = interp.interpret();
+    async function do_output() {
+        while (true) {
+            const res = run.next();
+            if (res.done) {
+                return;
+            }
+            switch (res.value) {
+                case "input":
+                case "halt": return;
+                case "line":
+                    terminal.appendChild(document.createTextNode(interp.output));
+                    break;
+                case "loop":
+                    await yieldToMain();
+                    break;
+                case "stack_pop":
+                case "stack_ret":
+                case "unknown":
+                    console.error(kind, interp);
+                    break
+            }
+        }
     }
+    await do_output();
 
-    submit_el.addEventListener("click", e => {
+    disassembly.appendChild(document.createTextNode(interp.disassemble(0)));
+
+    submit_el.addEventListener("click", async e => {
         e.preventDefault();
         const text = input_el.value;
         input_el.value = "";
-        interp.next(text + "\n");
+        interp.input = `${text}\n`;
+        await do_output();
         input_el.scrollIntoView();
     });
     input_el.addEventListener("keydown", e => {
@@ -296,3 +519,5 @@ look strange book`;
 
     console.log("Done")
 })()
+
+
