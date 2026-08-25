@@ -38,9 +38,14 @@ impl FileHandler for OutputTemplate {
 
         let env = ENVIRONMENT.lock().unwrap();
         let template = env.get_template(&path.to_string_lossy()).unwrap();
+
+        let mut meta: Vec<_> = metadata.iter().collect();
+        meta.sort_by_key(|(_, content)| content.get("date"));
+        meta.reverse();
+
         let output = template
             .render(context! {
-                posts => metadata,
+                posts => meta,
                 date => now(),
                 path,
             })

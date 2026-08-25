@@ -12,11 +12,11 @@
     <rights>Ella's Writing &#169; 2026 by Ella is licensed under CC BY-SA-NC 4.0</rights>
     <subtitle>Ella's blog posts on pretty much anything she's interested in, whether technical, social, or something else!</subtitle>
 
-    {% for post in posts | sort(reverse=true) if ".md" in post %}<entry>
-        <summary>{{ posts[post]["intro"] | e }}</summary>
-        <id>https://orangebacon.github.io/{{ post | remove_extension | remove_dot_slash }}</id>
-        <updated>{{ posts[post]["date"] | date_to_rfc3339 }}</updated>
-        <title>{{ posts[post]["title"] | e}}</title>
-        <link rel="alternate" href="https://orangebacon.github.io/{{ post | remove_extension | remove_dot_slash }}" />
+    {% for (name, post) in posts if ".md" in name %}<entry>
+        <summary>{{ post["intro"]  }}</summary>
+        <id>https://orangebacon.github.io/{{ name | remove_extension | remove_dot_slash | safe }}</id>
+        <updated>{{post['date'] | date_to_rfc3339 }}</updated>
+        <title>{{ post["title"] }}</title>
+        <link rel="alternate" href="https://orangebacon.github.io/{{ name | remove_extension | remove_dot_slash | safe }}" />
     </entry>{% endfor %}
 </feed>
