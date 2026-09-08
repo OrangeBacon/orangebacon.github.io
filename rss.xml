@@ -9,10 +9,17 @@
     <copyright>Ella's Writing &#169; 2026 by Ella is licensed under CC BY-SA-NC 4.0</copyright>
     <docs>https://www.rssboard.org/rss-specification</docs>
     <language>en-GB</language>
-    <lastBuildDate>Tue, 25 Aug 2026 00:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Tue, 08 Sep 2026 00:00:00 GMT</lastBuildDate>
     <dc:creator>Ella Moreton</dc:creator>
     <atom:link href="https://orangebacon.github.io/rss.xml" rel="self" type="application/rss+xml" />
 
+    <item>
+      <description></description>
+      <link>https://orangebacon.github.io/posts/2026-09-08-worth-doing</link>
+      <guid isPermaLink="true">https://orangebacon.github.io/posts/2026-09-08-worth-doing</guid>
+      <pubDate>Tue, 08 Sep 2026 00:00:00 GMT</pubDate>
+      <title>What is worth doing?</title>
+    </item>
     <item>
       <description>a lot of the time i just want to be outside, away from all the noise and busyness of the world</description>
       <link>https://orangebacon.github.io/posts/2026-08-25-outside</link>
