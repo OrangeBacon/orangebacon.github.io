@@ -2,7 +2,6 @@
 title: What is worth doing?
 date: 2026-09-08
 template: ./templates/post.html
-intro:
 ---
 
 I've been thinking about [Geoff Marshall](https://www.youtube.com/watch?v=367WdjdwGSE)'s most recent youtube video on where life is taking him, and how time is passing alarmingly quickly.
@@ -25,9 +24,9 @@ Even the government is now telling us all to stock up on food and water in case 
 
 [^1]: <https://commonslibrary.parliament.uk/research-briefings/cbp-10901/>
 
-And yet millions of $ are being given to people who seem to support the current US government's political views, people who are fascist[^1], racist and support ethnic cleansing.  Its hard for me to even understand how someone could consider others as something to be killed, rather than other people, just trying to live their lives.  There are a few people with so much money that they just live in a completely different world to the rest of us.  Yet some people support that 0.01%, over their own self interest, in case they suddenly get a £billion.
+And yet millions of $ are being given to people who seem to support the current US government's political views, people who are fascist[^2], racist and support ethnic cleansing.  Its hard for me to even understand how someone could consider others as something to be killed, rather than other people, just trying to live their lives.  There are a few people with so much money that they just live in a completely different world to the rest of us.  Yet some people support that 0.01%, over their own self interest, in case they suddenly get a £billion.
 
-[^1]: <https://brennan.day/normalized-fascism-in-open-source-12-million-given-to-dhh/>
+[^2]: <https://brennan.day/normalized-fascism-in-open-source-12-million-given-to-dhh/>
 
 Why would I want to accept that people think the world should be "helped" by hurting others?  <https://www.the-reframe.com/apology-not-accepted/>
 
