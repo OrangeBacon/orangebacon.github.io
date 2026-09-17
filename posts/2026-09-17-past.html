@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark light">
+    <link rel="alternate" type="application/rss+xml" href="/rss.xml">
+    <link rel="alternate" type="application/atom+xml" href="/atom.xml">
+    
+<title>Myself in the Past | Ella's Writing</title>
+
+<meta name="description" content="How to deal with that other part of you, that part that you know is still there, but not being let out?  That part of you that feels like they can keep going, can be confident. That part of you that is somehow good for you, yet also the worst of you." />
+<link rel="stylesheet" href="/assets/style.css">
+
+
+</head>
+
+<body>
+   
+<header>
+    <nav>
+        <a href="/">Ella's Writing</a>
+        <div class="theme-container">
+    <label for="theme">Theme: </label>
+    <select id="theme" title="Light/dark mode theme toggle">
+        <option value="Automatic">Automatic</option>
+        <option value="Light">Light</option>
+        <option value="Dark">Dark</option>
+    </select>
+</div>
+<script>
+    (() => {
+    // enhancement to load/store, inlined to avoid flash of wrong-theme
+    const el = document.getElementById("theme");
+    const meta = document.querySelector("meta[name='color-scheme']");
+    const values = [...el.children].map(el => el.value);
+    const storage_key = "dark-mode";
+
+    function setTheme() {
+        let value = el.value;
+        window.localStorage.setItem(storage_key, value);
+        if (value.includes("Light")) {
+            meta.setAttribute("content", "light");
+        } else if (value.includes("Dark")) {
+            meta.setAttribute("content", "dark");
+        } else {
+            meta.setAttribute("content", "light dark");
+        }
+    }
+
+    let stored = window.localStorage.getItem(storage_key);
+    if (!stored || !values.includes(stored)) {
+        stored = values[0];
+    }
+    el.value = stored;
+
+    setTheme();
+
+    el.addEventListener("change", setTheme);
+})();
+</script>
+    </nav>
+    
+<h1>Myself in the Past</h1>
+<p role="doc-subtitle">Written by Ella on <time datetime="2026-09-17">2026-09-17</time>, without AI</p>
+
+</header>
+
+
+<main>
+    <p>How to deal with that other part of you, that part that you know is still there, but not being let out?  That part of you that feels like they can keep going, can be confident. That part of you that is somehow good for you, yet also the worst of you.</p>
+<p>If I was to go back to who I was then it would be bad.  No question about that.  But how do I deal with the decisions that <em>I</em> made during that time.</p>
+<p>I believe that in some ways, the past version of me was better.  Better at socialising, better at organising things, getting stuff done.  Generally, just a more useful person to the world, to the people around us.</p>
+<p>Yet if you look deeper into that previous person we were, what do you see?  Someone hiding issues behind alcohol, someone who is just drinking all the problems away and intoxicating themselves, just to be able to get through the day.  Just putting up a facade, to try and keep going.  Have all the underlying things changed? No. No they haven't.</p>
+<p>And I know that that person that I was hurt people.  Yet by not being them, we're also hurting people.  Those who I talked to, who we were close to.  No matter which way I go, its bad.  I don't know.</p>
+<p>Potentially a large portion of the issues I've had have all been down to me, to what extent have I caused my own problems.  How do you deal with thinking that you have hurt lots of people around you?  I can tell that I have, yet what do I do about it?  How do I apologise for things that I've done, yet don't remember doing, how do I apologise for my personality changing so much.  For the person I was and yet still am deeper down somewhere.</p>
+<p>The lack of alcohol (not completely, but very rarely) is healthier for me, safer, cheaper, and yet there is  that part of me that says that we were more capable then, that we've lost a lot by not being that person.</p>
+<p>I don't know.  That feeling of wanting to go back to how we were is certainly strong, yet I know it would be bad.  Bad enough that I likely wouldn't live through it.  So we can't do that.  The temptation is very much there though.</p>
+<p>Its that guilt that I'm really feeling.  That knowledge that you did something wrong, you hurt people while doing it, yet by stopping, that hurts even more people.</p>
+<p>How is it that that time feels like a different person?  Was I really that different, even last year, were the situations I was in then anything that I would do?  What does it mean to be assigning those thoughts and feelings to a different personality?  How do I deal with that other personality needing to apologise, yet theyre never around because of me?</p>
+<p>Can we make things better by being that person again? Maybe.  But how much worse would it make everything else?</p>
+
+</main>
+
+
+<footer>
+    </ol></div>
+    <nav>
+        <a href="/rss.xml">RSS</a><a href="/atom.xml">Atom</a>
+        <p role="doc-credit">Ella's Writing &copy; 2026 by Ella is licensed under CC BY-SA-NC 4.0</p>
+    </nav>
+</footer>
+
+</body>
+
+</html>
