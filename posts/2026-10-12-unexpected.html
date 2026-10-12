@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark light">
+    <link rel="alternate" type="application/rss+xml" href="/rss.xml">
+    <link rel="alternate" type="application/atom+xml" href="/atom.xml">
+    
+<title>Unexpected Accidents | Ella's Writing</title>
+
+<meta name="description" content="Whelp.  I can recommend against running yourself over with a car, kind of hurts." />
+<link rel="stylesheet" href="/assets/style.css">
+
+
+</head>
+
+<body>
+   
+<header>
+    <nav>
+        <a href="/">Ella's Writing</a>
+        <div class="theme-container">
+    <label for="theme">Theme: </label>
+    <select id="theme" title="Light/dark mode theme toggle">
+        <option value="Automatic">Automatic</option>
+        <option value="Light">Light</option>
+        <option value="Dark">Dark</option>
+    </select>
+</div>
+<script>
+    (() => {
+    // enhancement to load/store, inlined to avoid flash of wrong-theme
+    const el = document.getElementById("theme");
+    const meta = document.querySelector("meta[name='color-scheme']");
+    const values = [...el.children].map(el => el.value);
+    const storage_key = "dark-mode";
+
+    function setTheme() {
+        let value = el.value;
+        window.localStorage.setItem(storage_key, value);
+        if (value.includes("Light")) {
+            meta.setAttribute("content", "light");
+        } else if (value.includes("Dark")) {
+            meta.setAttribute("content", "dark");
+        } else {
+            meta.setAttribute("content", "light dark");
+        }
+    }
+
+    let stored = window.localStorage.getItem(storage_key);
+    if (!stored || !values.includes(stored)) {
+        stored = values[0];
+    }
+    el.value = stored;
+
+    setTheme();
+
+    el.addEventListener("change", setTheme);
+})();
+</script>
+    </nav>
+    
+<h1>Unexpected Accidents</h1>
+<p role="doc-subtitle">Written by Ella on <time datetime="2026-10-12">2026-10-12</time>, without AI</p>
+
+</header>
+
+
+<main>
+    <p>Whelp.  I can recommend against running yourself over with a car, kind of hurts.</p>
+<p>Oopsie</p>
+<p>Not fun to be in hospital and then just sitting around at home doing nothing, waiting to get better.</p>
+<p>Back on with things now, I guess.</p>
+
+</main>
+
+
+<footer>
+    </ol></div>
+    <nav>
+        <a href="/rss.xml">RSS</a><a href="/atom.xml">Atom</a>
+        <p role="doc-credit">Ella's Writing &copy; 2026 by Ella is licensed under CC BY-SA-NC 4.0</p>
+    </nav>
+</footer>
+
+</body>
+
+</html>

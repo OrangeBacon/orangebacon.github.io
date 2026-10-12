@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>urn:uuid:09715801-0eb3-46ac-90e3-1b955463bf48</id>
     <title>Ella's Writing</title>
-    <updated>2026-09-17T00:00:00Z</updated>
+    <updated>2026-10-12T00:00:00Z</updated>
     <author>
         <name>Ella</name>
         <uri>https://orangebacon.github.io/</uri>
@@ -13,6 +13,12 @@
     <subtitle>Ella's blog posts on pretty much anything she's interested in, whether technical, social, or something else!</subtitle>
 
     <entry>
+        <summary>Whelp.  I can recommend against running yourself over with a car, kind of hurts.</summary>
+        <id>https://orangebacon.github.io/posts/2026-10-12-unexpected</id>
+        <updated>2026-10-12T00:00:00Z</updated>
+        <title>Unexpected Accidents</title>
+        <link rel="alternate" href="https://orangebacon.github.io/posts/2026-10-12-unexpected" />
+    </entry><entry>
         <summary>How to deal with that other part of you, that part that you know is still there, but not being let out?  That part of you that feels like they can keep going, can be confident. That part of you that is somehow good for you, yet also the worst of you.</summary>
         <id>https://orangebacon.github.io/posts/2026-09-17-past</id>
         <updated>2026-09-17T00:00:00Z</updated>

@@ -9,10 +9,17 @@
     <copyright>Ella's Writing &#169; 2026 by Ella is licensed under CC BY-SA-NC 4.0</copyright>
     <docs>https://www.rssboard.org/rss-specification</docs>
     <language>en-GB</language>
-    <lastBuildDate>Thu, 17 Sep 2026 00:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 12 Oct 2026 00:00:00 GMT</lastBuildDate>
     <dc:creator>Ella Moreton</dc:creator>
     <atom:link href="https://orangebacon.github.io/rss.xml" rel="self" type="application/rss+xml" />
 
+    <item>
+      <description>Whelp.  I can recommend against running yourself over with a car, kind of hurts.</description>
+      <link>https://orangebacon.github.io/posts/2026-10-12-unexpected</link>
+      <guid isPermaLink="true">https://orangebacon.github.io/posts/2026-10-12-unexpected</guid>
+      <pubDate>Mon, 12 Oct 2026 00:00:00 GMT</pubDate>
+      <title>Unexpected Accidents</title>
+    </item>
     <item>
       <description>How to deal with that other part of you, that part that you know is still there, but not being let out?  That part of you that feels like they can keep going, can be confident. That part of you that is somehow good for you, yet also the worst of you.</description>
       <link>https://orangebacon.github.io/posts/2026-09-17-past</link>
