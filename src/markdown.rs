@@ -9,7 +9,9 @@ use pulldown_cmark::{CodeBlockKind, Event, HeadingLevel, Options, Parser, Tag, T
 use pulldown_cmark_escape::{escape_href, escape_html, escape_html_body_text};
 
 use crate::{
-    file::{FileHandler, SiteEntries}, highlight, template::ENVIRONMENT,
+    file::{FileHandler, SiteEntries},
+    highlight,
+    template::ENVIRONMENT,
 };
 
 /// File handler for markdown files.  Parses the markdown and puts it into the
@@ -178,7 +180,7 @@ where
                     write!(&mut self.output, "<sup>[{}]</sup>", number)?;
                     self.write("</a>")?;
                 }
-                Event::InlineHtml(html) => {
+                Event::InlineHtml(html) | Event::Html(html) => {
                     // Assume I haven't tried to XSS myself
                     self.write(&html)?;
                 }
@@ -314,6 +316,7 @@ where
                 Ok(())
             }
             Tag::BlockQuote(_) => self.write("<blockquote>"),
+            Tag::HtmlBlock => Ok(()),
             tag => todo!("impl {tag:?}"),
         }
     }
@@ -351,6 +354,7 @@ where
             }
             TagEnd::CodeBlock => self.highlighted_code(),
             TagEnd::BlockQuote(_) => self.write("</blockquote>"),
+            TagEnd::HtmlBlock => Ok(()),
             tag => todo!("impl {tag:?}"),
         }
     }
