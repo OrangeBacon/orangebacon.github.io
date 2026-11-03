@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark light">
+    <link rel="alternate" type="application/rss+xml" href="/rss.xml">
+    <link rel="alternate" type="application/atom+xml" href="/atom.xml">
+    
+<title>Buggy Computers | Ella's Writing</title>
+
+<meta name="description" content="A while ago I saw someone who had written down a whole load of computer bugs they found within a week of just using software as they normally would.  I thought I&#x27;d give it a go myself, to see how much time I&#x27;m wasting constantly." />
+<link rel="stylesheet" href="/assets/style.css">
+
+
+</head>
+
+<body>
+   
+<header>
+    <nav>
+        <a href="/">Ella's Writing</a>
+        <div class="theme-container">
+    <label for="theme">Theme: </label>
+    <select id="theme" title="Light/dark mode theme toggle">
+        <option value="Automatic">Automatic</option>
+        <option value="Light">Light</option>
+        <option value="Dark">Dark</option>
+    </select>
+</div>
+<script>
+    (() => {
+    // enhancement to load/store, inlined to avoid flash of wrong-theme
+    const el = document.getElementById("theme");
+    const meta = document.querySelector("meta[name='color-scheme']");
+    const values = [...el.children].map(el => el.value);
+    const storage_key = "dark-mode";
+
+    function setTheme() {
+        let value = el.value;
+        window.localStorage.setItem(storage_key, value);
+        if (value.includes("Light")) {
+            meta.setAttribute("content", "light");
+        } else if (value.includes("Dark")) {
+            meta.setAttribute("content", "dark");
+        } else {
+            meta.setAttribute("content", "light dark");
+        }
+    }
+
+    let stored = window.localStorage.getItem(storage_key);
+    if (!stored || !values.includes(stored)) {
+        stored = values[0];
+    }
+    el.value = stored;
+
+    setTheme();
+
+    el.addEventListener("change", setTheme);
+})();
+</script>
+    </nav>
+    
+<h1>Buggy Computers</h1>
+<p role="doc-subtitle">Written by Ella on <time datetime="2026-11-03">2026-11-03</time>, without AI</p>
+
+</header>
+
+
+<main>
+    <p>A while ago I saw someone who had written down a whole load of computer bugs they found within a week of just using software as they normally would.  I thought I'd give it a go myself, to see how much time I'm wasting constantly.</p>
+<p>Monday:</p>
+<ul>
+<li>Dell support assist took the whole SSD for half an hour, making everything un-usably laggy.  I didn't even want it installed in the first place.  Various other shitty dell programs also caused noticeable lag.  I can't un-install them because its a work computer.</li>
+<li>Windows explorer stopped responding for a few minutes because I tried to re-name a file.</li>
+<li>The "menu" button to display a context menu from the keyboard doesn't work in adobe acrobat.</li>
+</ul>
+<p>Tuesday:</p>
+<ul>
+<li>Outlook froze because I tried to open a draft email.</li>
+<li>Word started saving a document and set the cursor to the spinning/loading one.  It then never un-set that once the document had saved.</li>
+<li>Notepad spent a while showing 2 cursors in different locations, even though only one was being used (or even supported?).</li>
+</ul>
+<p>Wednesday:</p>
+<ul>
+<li>Power button didn't turn on the computer despite lighting up.  Had to press it again.</li>
+<li>Adobe acrobat missed the space in "up to" in a dialog box.</li>
+<li>Spell check in word sometimes exits part way through the check, so I have to open the window again.</li>
+</ul>
+<p>Thursday:</p>
+<ul>
+<li>Word's search pane stopped showing the list of results until I had closed all open documents and restarted word twice.</li>
+<li>Adobe acrobat's page rotate buttons next to individual pages are pixelated unless the mouse is hovering over them.</li>
+</ul>
+<p>Friday:</p>
+<ul>
+<li>Outlook didn't draw a cursor if I had the to, cc or subject fields selected until I started typing.</li>
+</ul>
+<p>Whelp.  That's about 2 hours over the course of the week.  Notably, none of the issues occurred on my Windows 10 computer at home, only on Windows 11, while at work.</p>
+<p>At least I'm getting paid for the time?</p>
+
+</main>
+
+
+<footer>
+    </ol></div>
+    <nav>
+        <a href="/rss.xml">RSS</a><a href="/atom.xml">Atom</a>
+        <p role="doc-credit">Ella's Writing &copy; 2026 by Ella is licensed under CC BY-SA-NC 4.0</p>
+    </nav>
+</footer>
+
+</body>
+
+</html>
