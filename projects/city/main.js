@@ -57,7 +57,9 @@ void main() {
 
     vec3 col = sky_full(view_dir_reflected, sun_dir);
 
-    col *= view_dir.y < 0.0 ? 0.2 : 1.0; // lower reflection
+    if(view_dir.y < 0.0) {
+        col = vec3(30.0 / 256.0);
+    }
     col = pow(col, vec3(1.0 / 2.2)); // gamma correct
 
     gl_FragColor = vec4(col, 1.0);
@@ -65,7 +67,13 @@ void main() {
 
     constructor(/** @type HTMLCanvasElement */ canvas) {
         this.canvas = canvas;
-        const gl = this.canvas.getContext("webgl");
+        const gl = this.canvas.getContext("webgl", {
+            alpha: false,
+            depth: false,
+            stencil: false,
+            antialias: true,
+            preserveDrawingBuffer: false,
+        });
         if (gl) {
             this.gl = gl
         } else {
@@ -132,16 +140,10 @@ void main() {
 
 class Buildings {
     /** @type HTMLCanvasElement */ canvas;
-    /** @type CanvasRenderingContext2D */ ctx;
 
     constructor(/** @type HTMLCanvasElement */ canvas) {
         this.canvas = canvas;
-        let ctx = this.canvas.getContext("2d");
-        if (ctx) {
-            this.ctx = ctx;
-        } else {
-            throw "Canvas2D not supported";
-        }
+        this.rough = rough.canvas(canvas);
     }
 
     frame() {
@@ -151,40 +153,91 @@ class Buildings {
     resize({ size }) {
         this.canvas.width = size.canvas_width;
         this.canvas.height = size.canvas_height;
+        this.scene(size);
     }
 
     building() {
-        let height = getRandomInt(2, 10);
-        let widths = [2, 2, 2, 3, 3, 4];
-        let width = widths[getRandomInt(0, widths.length - 1)];
-        let floor_height = getRandomInt(126, 145);
-        let column_width = getRandomInt(150, 200);
+        const height = getRandomInt(2, 10);
+        const widths = [2, 2, 2, 3, 3, 4];
+        const width = widths[getRandomInt(0, widths.length - 1)];
+        const floor_height = getRandomInt(70, 80);
+        const column_width = getRandomInt(80, 110);
 
-        let windows = [];
+        const door_idx = getRandomInt(0, width - 1);
+        const door_width = getRandomInt(14, 18);
+        const door_height = getRandomInt(38, 42);
 
-        let door_idx = getRandomInt(0, width - 1);
+        const window_height = getRandomInt(16, 20);
+        const window_width = getRandomInt(22, 28);
+
+        const fill = () => `rgba(${Math.random() * 256}, ${Math.random() * 256}, ${Math.random() * 256}, 1)`;
+
+        let rects = [{
+            x: 0,
+            y: 0,
+            width: width * column_width,
+            height: height * floor_height,
+            fill: fill(),
+        }];
+
         for (let i = 0; i < width; i++) {
-            // test for door, guard against float comparison with equals
-            if (Math.abs(i - door_idx) < 0.1) {
-                // door
+            if (i == door_idx) {
+                rects.push({
+                    x: i * column_width + (column_width - door_width) / 2,
+                    y: 0,
+                    width: door_width,
+                    height: door_height,
+                    fill: fill(),
+                })
             } else {
-                // window
+                rects.push({
+                    x: i * column_width + (column_width - window_width) / 2,
+                    y: door_height - window_height,
+                    width: window_width,
+                    height: window_height,
+                    fill: fill(),
+                })
             }
         }
 
-        for (let y = 0; y < height - 1; y++) {
+        for (let y = 1; y < height; y++) {
             for (let x = 0; x < width; x++) {
                 if (Math.random() > 0.98) {
                     continue;
                 }
-                // window
+                rects.push({
+                    x: x * column_width + (column_width - window_width) / 2,
+                    y: y * floor_height + (door_height - window_height),
+                    width: window_width,
+                    height: window_height,
+                    fill: fill(),
+                })
             }
         }
 
-        return {
-            width: width * column_width,
-            height: height * floor_height,
-            windows,
+        return rects
+    }
+
+    draw_building(size, x, y, scale) {
+        const building = this.building();
+
+        for (const rect of building) {
+            this.rough.rectangle(
+                rect.x * size.frame_scale * scale + size.horizontal_offset + x * size.frame_scale,
+                size.canvas_height - ((rect.y + rect.height) * size.frame_scale * scale + size.vertical_offset + y * size.frame_scale),
+                rect.width * size.frame_scale * scale,
+                rect.height * size.frame_scale * scale,
+                { fill: rect.fill, fillStyle: `solid` }
+            );
+        }
+    }
+
+    scene(size) {
+        this.rough.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        for (let i = 0; i < 15; i++) {
+            const scale = Math.random() / 2;
+            this.draw_building(size, size.frame_width * Math.random(), size.frame_height * scale, (0.5 - scale) + 0.5)
         }
     }
 }
