@@ -1,10 +1,16 @@
 function getRandomInt(min, max) {
-    min = Math.ceil(min);
-    max = Math.floor(max);
+    min = Math.ceil(Math.min(min, max));
+    max = Math.floor(Math.max(min, max));
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-class Background {
+function getRandomFloat(min, max) {
+    min = Math.min(min, max);
+    max = Math.max(min, max);
+    return Math.random() * (max - min + 1) + min;
+}
+
+class BackgroundLayer {
     /** @type HTMLCanvasElement */ canvas;
     /** @type WebGLRenderingContext */ gl;
 
@@ -138,25 +144,58 @@ void main() {
     }
 }
 
-class Buildings {
+class BuildingLayer {
     /** @type HTMLCanvasElement */ canvas;
+    buildings = [];
+    size = "";
 
     constructor(/** @type HTMLCanvasElement */ canvas) {
         this.canvas = canvas;
         this.rough = rough.canvas(canvas);
+
+        for (let i = 0; i < 15; i++) {
+            const scale = Math.random() / 2;
+            let b = new Building();
+
+            this.buildings.push({
+                x: Math.random(),
+                z: getRandomFloat(0, 40),
+                building: b,
+            });
+        }
+
+        this.buildings.sort((a, b) => b.z - a.z);
     }
 
-    frame() {
+    frame({ size }) {
+        if (JSON.stringify(size) == this.size) {
+            return;
+        }
+        this.size = JSON.stringify(size);
 
+        this.rough.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        for (const building of this.buildings) {
+            building.building.draw(
+                size,
+                size.frame_width * building.x,
+                size.frame_height * building.z / 100,
+                (100 - building.z) / 100,
+                this.rough,
+            );
+        }
     }
 
     resize({ size }) {
         this.canvas.width = size.canvas_width;
         this.canvas.height = size.canvas_height;
-        this.scene(size);
     }
+}
 
-    building() {
+class Building {
+    static gen = rough.generator();
+
+    constructor() {
         const height = getRandomInt(2, 10);
         const widths = [2, 2, 2, 3, 3, 4];
         const width = widths[getRandomInt(0, widths.length - 1)];
@@ -170,14 +209,11 @@ class Buildings {
         const window_height = getRandomInt(16, 20);
         const window_width = getRandomInt(22, 28);
 
-        const fill = () => `rgba(${Math.random() * 256}, ${Math.random() * 256}, ${Math.random() * 256}, 1)`;
-
         let rects = [{
             x: 0,
             y: 0,
             width: width * column_width,
             height: height * floor_height,
-            fill: fill(),
         }];
 
         for (let i = 0; i < width; i++) {
@@ -187,7 +223,6 @@ class Buildings {
                     y: 0,
                     width: door_width,
                     height: door_height,
-                    fill: fill(),
                 })
             } else {
                 rects.push({
@@ -195,7 +230,6 @@ class Buildings {
                     y: door_height - window_height,
                     width: window_width,
                     height: window_height,
-                    fill: fill(),
                 })
             }
         }
@@ -210,42 +244,36 @@ class Buildings {
                     y: y * floor_height + (door_height - window_height),
                     width: window_width,
                     height: window_height,
-                    fill: fill(),
                 })
             }
         }
 
-        return rects
+        for (const rect of rects) {
+            rect.fill = `rgba(${Math.random() * 256}, ${Math.random() * 256}, ${Math.random() * 256}, 1.0)`;
+            rect.seed = Math.ceil(Math.random() * (2 ** 31));
+            rect.roughness = getRandomFloat(0.5, 1.2);
+        }
+
+        this.rects = rects;
     }
 
-    draw_building(size, x, y, scale) {
-        const building = this.building();
-
-        for (const rect of building) {
-            this.rough.rectangle(
+    draw(size, x, y, scale, ctx) {
+        for (const rect of this.rects) {
+            ctx.rectangle(
                 rect.x * size.frame_scale * scale + size.horizontal_offset + x * size.frame_scale,
                 size.canvas_height - ((rect.y + rect.height) * size.frame_scale * scale + size.vertical_offset + y * size.frame_scale),
                 rect.width * size.frame_scale * scale,
                 rect.height * size.frame_scale * scale,
-                { fill: rect.fill, fillStyle: `solid` }
+                { fill: rect.fill, fillStyle: `solid`, seed: rect.seed, roughness: rect.roughness }
             );
-        }
-    }
-
-    scene(size) {
-        this.rough.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-        for (let i = 0; i < 15; i++) {
-            const scale = Math.random() / 2;
-            this.draw_building(size, size.frame_width * Math.random(), size.frame_height * scale, (0.5 - scale) + 0.5)
         }
     }
 }
 
 class Cityscape {
     layers = [
-        new Background(document.getElementById("background")),
-        new Buildings(document.getElementById("buildings")),
+        new BackgroundLayer(document.getElementById("background")),
+        new BuildingLayer(document.getElementById("buildings")),
     ];
 
     time = {
